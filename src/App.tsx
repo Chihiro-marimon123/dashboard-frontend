@@ -3,6 +3,16 @@ import ConflictSection from "./components/ConflictSection";
 import TradeSection from "./components/TradeSection";
 import StabilitySection from "./components/StabilitySection";
 import RelationshipSection from "./components/RelationshipSection";
+import japanInfographic from "./attachments/ChatGPT Image Sep 11, 2026 at 11_41_38 PM.png";
+import unitedStatesInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_10_54 AM (1).png";
+import canadaInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_12_47 AM (2).png";
+import unitedKingdomInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_12_48 AM (3).png";
+import franceInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_12_49 AM (4).png";
+import germanyInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_12_50 AM (5).png";
+import italyInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_12_51 AM (6).png";
+import russiaInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_12_52 AM (7).png";
+import chinaInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_12_54 AM (8).png";
+import indiaInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_12_56 AM (9).png";
 
 const NAV_LINKS = [
   { href: "#about", label: "About" },
@@ -38,6 +48,19 @@ const SECTIONS = [
     title: "How do major countries build relationships?",
     desc: "Interactive geopolitical network for G7 nations, Russia, China, and India.",
   },
+];
+
+const RELATIONSHIP_INFOGRAPHICS = [
+  { country: "Japan", image: japanInfographic },
+  { country: "United States", image: unitedStatesInfographic },
+  { country: "Canada", image: canadaInfographic },
+  { country: "United Kingdom", image: unitedKingdomInfographic },
+  { country: "France", image: franceInfographic },
+  { country: "Germany", image: germanyInfographic },
+  { country: "Italy", image: italyInfographic },
+  { country: "Russia", image: russiaInfographic },
+  { country: "China", image: chinaInfographic },
+  { country: "India", image: indiaInfographic },
 ];
 
 function Navbar() {
@@ -405,6 +428,119 @@ function Footer() {
   );
 }
 
+function CountryRelationships() {
+  const [selectedProfile, setSelectedProfile] = useState<(typeof RELATIONSHIP_INFOGRAPHICS)[number] | null>(null);
+
+  useEffect(() => {
+    if (!selectedProfile) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedProfile(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedProfile]);
+
+  return (
+    <section id="country-relationships" style={{ background: "#070b10", padding: "80px 0", borderTop: "1px solid #1a2435" }}>
+      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 24px" }}>
+        <div style={{ marginBottom: 8, fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: "#dfa92a", letterSpacing: 2 }}>
+          COUNTRY PROFILES
+        </div>
+        <h2 style={{ fontFamily: "Fraunces, serif", fontSize: 42, fontWeight: 700, color: "#dde4ee", lineHeight: 1.15, marginBottom: 12 }}>
+          Countries and their relationships
+        </h2>
+        <p style={{ fontSize: 15, color: "#7a8899", maxWidth: 640, lineHeight: 1.7, marginBottom: 36 }}>
+          A closer look at the alliances, partnerships, rivalries, and dependencies shaping each country&apos;s international position.
+        </p>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 16,
+            overflowX: "auto",
+            padding: "4px 2px 16px",
+            scrollSnapType: "x mandatory",
+            scrollbarColor: "#4a5568 #0c1118",
+          }}
+        >
+          {RELATIONSHIP_INFOGRAPHICS.map((profile) => (
+            <figure
+              key={profile.country}
+              onClick={() => setSelectedProfile(profile)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") setSelectedProfile(profile);
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Enlarge ${profile.country} relationship infographic`}
+              style={{
+                flex: "0 0 clamp(180px, 18vw, 210px)",
+                margin: 0,
+                background: "#0c1118",
+                border: "1px solid #1a2435",
+                borderRadius: 8,
+                padding: 10,
+                cursor: "zoom-in",
+                scrollSnapAlign: "start",
+                transition: "border-color 0.2s, transform 0.2s",
+              }}
+            >
+              <img
+                src={profile.image}
+                alt={`${profile.country} international relationships infographic`}
+                style={{ display: "block", width: "100%", height: "auto", aspectRatio: "226 / 320", objectFit: "cover", borderRadius: 4, background: "#fff" }}
+              />
+              <figcaption style={{ padding: "12px 4px 2px", color: "#dde4ee", fontFamily: "JetBrains Mono, monospace", fontSize: 12 }}>
+                {profile.country}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+
+      {selectedProfile && (
+        <div
+          role="presentation"
+          onClick={() => setSelectedProfile(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 200,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 24,
+            background: "rgba(3, 6, 10, 0.88)",
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${selectedProfile.country} relationship infographic`}
+            onClick={(event) => event.stopPropagation()}
+            style={{ position: "relative", maxWidth: "min(90vw, 520px)", maxHeight: "92vh" }}
+          >
+            <img
+              src={selectedProfile.image}
+              alt={`${selectedProfile.country} international relationships infographic enlarged`}
+              style={{ display: "block", maxWidth: "100%", maxHeight: "92vh", width: "auto", height: "auto", borderRadius: 6, background: "#fff", boxShadow: "0 20px 80px rgba(0,0,0,0.65)" }}
+            />
+            <button
+              type="button"
+              onClick={() => setSelectedProfile(null)}
+              aria-label="Close enlarged infographic"
+              style={{ position: "absolute", top: 10, right: 10, width: 34, height: 34, border: "1px solid #1a2435", borderRadius: "50%", background: "#070b10", color: "#dde4ee", fontSize: 24, lineHeight: 1, cursor: "pointer" }}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function App() {
   return (
     <div style={{ minHeight: "100vh", background: "#070b10" }}>
@@ -416,6 +552,7 @@ export default function App() {
       <TradeSection />
       <StabilitySection />
       <RelationshipSection />
+      <CountryRelationships />
       <Footer />
     </div>
   );
