@@ -1,0 +1,10 @@
+{
+  "description": "Explore global political stability, conflict impacts, and economic growth through interactive maps and rankings, providing insights for researchers and policymakers.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
