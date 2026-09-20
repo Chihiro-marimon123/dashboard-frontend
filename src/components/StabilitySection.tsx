@@ -1,8 +1,20 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import WorldChoropleth, {
   stabilityColor, gdpColor, QUADRANT_COLORS, getQuadrant,
 } from "./WorldChoropleth";
 import { conflictsByDeaths, politicalStabilityData, gdpGrowthData, countryNames, unstableCountriesIndex } from "../data";
+
+function summarizeDetail(detail: string) {
+  const sentences = detail
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .filter(Boolean)
+    .slice(0, 3)
+    .join(" ")
+    .trim();
+
+  return sentences || detail.trim();
+}
 
 function MapLegend({ items }: { items: { color: string; label: string }[] }) {
   return (
@@ -48,24 +60,27 @@ const deathMarkers = conflictsByDeaths.map((c) => ({
   rank: c.rank,
 }));
 
-function InstabilityIndex() {
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const toggle = useCallback((country: string) => {
-    setExpanded((prev) => (prev === country ? null : country));
-  }, []);
+function getCountryIdByName(countryName: string) {
+  return Object.entries(countryNames).find(([, name]) => name === countryName)?.[0] ?? null;
+}
 
+function InstabilityIndex({ highlightedCountryId, onSelectCountry }: {
+  highlightedCountryId: string | null;
+  onSelectCountry: (countryId: string | null) => void;
+}) {
   return (
     <div style={{ marginTop: 48, borderTop: "1px solid #1a2435", paddingTop: 36 }}>
       <h3 style={{ fontFamily: "Fraunces, serif", fontSize: 26, fontWeight: 600, color: "#dde4ee", marginBottom: 8 }}>
         Instability Index
       </h3>
       <p style={{ fontSize: 13, color: "#7a8899", marginBottom: 28, maxWidth: 640, lineHeight: 1.7 }}>
-        Countries with the lowest WGI Political Stability scores. Click "See more" to read about the root causes, current situation, and cultural identity of each country.
+        Countries with the lowest WGI Political Stability scores. Each entry below includes a concise summary of the conflict, governance crisis, and broader context behind the rating.
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
         {unstableCountriesIndex.map((entry, i) => {
-          const isOpen = expanded === entry.country;
           const accent = stabilityColor(entry.score);
+          const summary = summarizeDetail(entry.detail);
+
           return (
             <div
               key={entry.country}
@@ -73,18 +88,15 @@ function InstabilityIndex() {
                 borderTop: i === 0 ? "1px solid #1a2435" : "none",
                 borderBottom: "1px solid #1a2435",
                 borderLeft: `3px solid ${accent}`,
-                background: isOpen ? "#111922" : "transparent",
-                transition: "background 0.2s",
+                background: "transparent",
               }}
             >
-              {/* Row header */}
               <div style={{
                 display: "flex",
                 alignItems: "center",
                 padding: "16px 20px",
                 gap: 16,
               }}>
-                {/* Rank */}
                 <div style={{
                   fontFamily: "JetBrains Mono, monospace",
                   fontSize: 11,
@@ -94,11 +106,25 @@ function InstabilityIndex() {
                 }}>
                   {i + 1}
                 </div>
-                {/* Flag */}
                 <div style={{ fontSize: 22, lineHeight: 1, minWidth: 30 }}>{entry.flag}</div>
-                {/* Country name */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontWeight: 600, color: "#dde4ee", fontSize: 15 }}>{entry.country}</span>
+                  <button
+                    type="button"
+                    onClick={() => onSelectCountry(getCountryIdByName(entry.country) ?? null)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                      font: "inherit",
+                      textAlign: "left",
+                      color: highlightedCountryId === getCountryIdByName(entry.country) ? "#f6d365" : "#dde4ee",
+                      fontWeight: 600,
+                      fontSize: 15,
+                    }}
+                  >
+                    {entry.country}
+                  </button>
                   <span style={{
                     display: "inline-block",
                     marginLeft: 10,
@@ -112,70 +138,30 @@ function InstabilityIndex() {
                     {entry.score.toFixed(2)}
                   </span>
                 </div>
-                {/* Situation summary (hidden when expanded) */}
-                {!isOpen && (
-                  <div style={{
-                    fontSize: 12,
-                    color: "#7a8899",
-                    maxWidth: 420,
-                    flex: 2,
-                    lineHeight: 1.5,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 1,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                  }}>
-                    {entry.situation}
-                  </div>
-                )}
-                {/* See more button */}
-                <button
-                  onClick={() => toggle(entry.country)}
-                  style={{
-                    marginLeft: "auto",
-                    flexShrink: 0,
-                    padding: "6px 16px",
-                    borderRadius: 6,
-                    border: `1px solid ${isOpen ? accent : "#1a2435"}`,
-                    background: isOpen ? `${accent}18` : "transparent",
-                    color: isOpen ? accent : "#7a8899",
-                    fontFamily: "Inter, sans-serif",
-                    fontSize: 12,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {isOpen ? "See less ▲" : "See more ▼"}
-                </button>
               </div>
 
-              {/* Expanded detail */}
-              {isOpen && (
+              <div style={{
+                padding: "0 20px 20px 73px",
+              }}>
                 <div style={{
-                  padding: "0 20px 24px 73px",
+                  fontSize: 13,
+                  color: "#b0b8c8",
+                  lineHeight: 1.85,
+                  borderTop: "1px solid #1a2435",
+                  paddingTop: 18,
                 }}>
+                  {summary}
+                </div>
+                <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{
-                    fontSize: 13,
-                    color: "#b0b8c8",
-                    lineHeight: 1.85,
-                    borderTop: "1px solid #1a2435",
-                    paddingTop: 18,
+                    fontSize: 11,
+                    fontFamily: "JetBrains Mono, monospace",
+                    color: "#4a5568",
                   }}>
-                    {entry.detail}
-                  </div>
-                  <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{
-                      fontSize: 11,
-                      fontFamily: "JetBrains Mono, monospace",
-                      color: "#4a5568",
-                    }}>
-                      WGI Political Stability 2023: {entry.score.toFixed(2)} (global range: -2.85 to +2.0)
-                    </div>
+                    WGI Political Stability 2023: {entry.score.toFixed(2)} (global range: -2.85 to +2.0)
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           );
         })}
@@ -189,6 +175,11 @@ function InstabilityIndex() {
 
 export default function StabilitySection() {
   const [activeTab, setActiveTab] = useState<"A" | "B" | "C">("A");
+  const [highlightedCountryId, setHighlightedCountryId] = useState<string | null>(null);
+
+  const handleCountrySelect = (countryId: string | null) => {
+    setHighlightedCountryId((prev) => (prev === countryId ? null : countryId));
+  };
 
   const tabs = [
     { key: "A" as const, label: "Map A · Political Stability" },
@@ -254,6 +245,7 @@ export default function StabilitySection() {
                   value: v !== undefined ? `WGI Score: ${v > 0 ? "+" : ""}${v.toFixed(2)}` : "No data",
                 };
               }}
+              highlightedCountryId={highlightedCountryId}
             />
             <MapLegend items={STABILITY_LEGEND} />
           </div>
@@ -277,6 +269,7 @@ export default function StabilitySection() {
                 };
               }}
               markers={deathMarkers}
+              highlightedCountryId={highlightedCountryId}
             />
             <MapLegend items={GDP_LEGEND} />
             <div style={{ marginTop: 10, fontSize: 12, color: "#4a5568", display: "flex", alignItems: "center", gap: 8 }}>
@@ -314,6 +307,7 @@ export default function StabilitySection() {
                 };
                 return { name, value: labels[q] ?? "Unknown" };
               }}
+              highlightedCountryId={highlightedCountryId}
             />
             <MapLegend items={QUADRANT_LEGEND} />
             <div style={{ marginTop: 14, fontSize: 12, color: "#4a5568" }}>
@@ -324,7 +318,7 @@ export default function StabilitySection() {
         )}
 
         {/* Unstable countries index */}
-        <InstabilityIndex />
+        <InstabilityIndex highlightedCountryId={highlightedCountryId} onSelectCountry={handleCountrySelect} />
       </div>
     </section>
   );

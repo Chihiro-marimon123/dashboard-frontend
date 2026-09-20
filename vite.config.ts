@@ -18,6 +18,8 @@ export default defineConfig(({ mode }) => {
       sourcemap: emitSourcemaps ? "inline" : false,
       minify: !emitSourcemaps,
     },
+    optimizeDeps:{ include: ["prop-types", "react-simple-maps"], 
+    },
     plugins: [
       react(),
       tailwindcss(),

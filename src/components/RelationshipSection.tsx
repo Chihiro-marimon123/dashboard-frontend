@@ -26,7 +26,7 @@ const countries: Country[] = [
     id: "USA",
     name: "United States",
     x: 155,
-    y: 255,
+    y: 280,
     color: "#4488ff",
     bloc: "G7",
     flag: "🇺🇸",
@@ -334,6 +334,50 @@ function getCountry(id: string) {
   return countries.find((c) => c.id === id)!
 }
 
+const RELATIONSHIP_PRIORITY: Record<Relationship["type"], number> = {
+  alliance: 5,
+  partnership: 4,
+  cooperation: 3,
+  energy: 2,
+  competitive: 1,
+  hostile: 0,
+}
+
+function compareRelationships(a: Relationship, b: Relationship) {
+  return RELATIONSHIP_PRIORITY[b.type] - RELATIONSHIP_PRIORITY[a.type]
+}
+
+function buildAllianceSummary(
+  relations: Relationship[],
+  selectedCountryName?: string | null,
+) {
+  if (!relations.length) {
+    return selectedCountryName
+      ? `${selectedCountryName} has no formal alliance in this network, but its security posture is shaped by broader regional competition and strategic hedging.`
+      : "NATO and the US-led security architecture remain the central pillars of alliance politics, while the Indo-Pacific has added new forms of defence cooperation and strategic balancing."
+  }
+
+  const firstPairs = relations.slice(0, 3).map((r) => {
+    const match = r.from === selectedCountryName ? r.to : r.from
+    return match
+  })
+
+  const labelSet = new Set(
+    relations.map((r) => r.label.split("+")[0].trim()),
+  )
+  const topLabel = [...labelSet][0] ?? relations[0].label
+
+  const countryLabel = selectedCountryName
+    ? `${selectedCountryName} is tied most closely to ${firstPairs.join(", ")}, where formal alliances provide the core framework for security cooperation.`
+    : "The alliance system is centered on NATO, the US-UK special relationship, and the US-Japan security bond."
+
+  return [
+    `${countryLabel}`,
+    `${topLabel} reflects a long-established security architecture that has been strengthened by recent developments, including Russia's invasion of Ukraine, rising tensions over Taiwan, and the expansion of regional defence cooperation in the Indo-Pacific.`,
+    "These alliances remain central to modern geopolitics because they shape intelligence sharing, arms procurement, military basing, and strategic signaling across multiple theatres.",
+  ].join(" ")
+}
+
 function midpoint(
   a: Country,
   b: Country,
@@ -352,10 +396,36 @@ function midpoint(
 export default function RelationshipSection() {
   const [hovered, setHovered] = useState<Relationship | null>(null)
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null)
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
 
   const activeRels = relationships.filter(
     (r) =>
       !hoveredCountry || r.from === hoveredCountry || r.to === hoveredCountry,
+  )
+
+  const filteredRelationships = selectedCountry
+    ? relationships
+        .filter((r) => r.from === selectedCountry || r.to === selectedCountry)
+        .sort(compareRelationships)
+    : [...relationships].sort(compareRelationships)
+
+  const selectedCountryName = selectedCountry
+    ? getCountry(selectedCountry).name
+    : null
+
+  const selectedTopRelationship = selectedCountry
+    ? filteredRelationships[0] ?? null
+    : null
+
+  const allianceRelationships = selectedCountry
+    ? relationships.filter(
+        (r) => r.type === "alliance" && (r.from === selectedCountry || r.to === selectedCountry),
+      )
+    : relationships.filter((r) => r.type === "alliance")
+
+  const allianceSummary = buildAllianceSummary(
+    allianceRelationships,
+    selectedCountryName,
   )
 
   return (
@@ -395,13 +465,27 @@ export default function RelationshipSection() {
             color: "#7a8899",
             maxWidth: 640,
             lineHeight: 1.7,
-            marginBottom: 36,
+            marginBottom: 12,
           }}
         >
           Geopolitical relationships between the G7 nations, Russia, China, and
           India, covering alliances, strategic partnerships, trade dependencies,
           and active rivalries. Hover a country or edge to explore.
         </p>
+
+        <div
+          style={{
+            marginBottom: 22,
+            color: "#e85d5d",
+            fontSize: 22,
+            fontWeight: 600,
+            lineHeight: 1.5,
+            letterSpacing: 0.2,
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
+          Click on a country to see its specific relationships.
+        </div>
 
         {/* Network diagram */}
         <div
@@ -437,6 +521,15 @@ export default function RelationshipSection() {
 
             <rect width={W} height={H} fill="url(#bgGrad)" />
 
+            {/* Faint world map baseline to align nodes with real geography */}
+            <g opacity={0.18} fill="#233548" stroke="#3a506c" strokeWidth={1}>
+              <path d="M 70 190 Q 98 138 150 120 L 210 80 Q 238 68 252 98 L 256 150 L 226 210 L 192 234 L 150 260 L 112 252 L 90 218 Z" />
+              <path d="M 292 112 L 324 92 L 352 96 L 372 88 L 394 96 L 423 111 L 447 122 L 437 160 L 392 176 L 354 170 L 316 152 Z" />
+              <path d="M 348 186 L 390 188 L 432 212 L 448 258 L 432 332 L 392 360 L 360 330 L 346 276 L 338 228 Z" />
+              <path d="M 456 114 L 505 90 L 560 78 L 620 104 L 670 126 L 718 104 L 794 118 L 810 154 L 776 206 L 718 224 L 668 246 L 620 206 L 584 181 L 536 206 L 500 210 L 472 166 Z" />
+              <path d="M 568 332 L 620 326 L 648 352 L 634 400 L 592 394 L 570 360 Z" />
+            </g>
+
             {/* Subtle country glow */}
             {countries.map((c) => (
               <circle
@@ -454,10 +547,15 @@ export default function RelationshipSection() {
               const a = getCountry(rel.from)
               const b = getCountry(rel.to)
               const style = REL_STYLES[rel.type]
+              const isSelectedRelation =
+                !selectedCountry ||
+                rel.from === selectedCountry ||
+                rel.to === selectedCountry
               const isActive =
-                !hoveredCountry ||
-                rel.from === hoveredCountry ||
-                rel.to === hoveredCountry
+                isSelectedRelation &&
+                (!hoveredCountry ||
+                  rel.from === hoveredCountry ||
+                  rel.to === hoveredCountry)
               const [cx, cy] = midpoint(a, b, 18)
               const d = `M ${a.x},${a.y} Q ${cx},${cy} ${b.x},${b.y}`
               return (
@@ -482,13 +580,14 @@ export default function RelationshipSection() {
 
             {/* Country nodes */}
             {countries.map((c) => {
+              const isSelected = selectedCountry === c.id
               const isActive =
-                !hoveredCountry ||
-                hoveredCountry === c.id ||
+                !selectedCountry ||
+                isSelected ||
                 relationships.some(
                   (r) =>
                     (r.from === c.id || r.to === c.id) &&
-                    (r.from === hoveredCountry || r.to === hoveredCountry),
+                    (r.from === selectedCountry || r.to === selectedCountry),
                 )
               return (
                 <g
@@ -496,14 +595,19 @@ export default function RelationshipSection() {
                   style={{ cursor: "pointer" }}
                   onMouseEnter={() => setHoveredCountry(c.id)}
                   onMouseLeave={() => setHoveredCountry(null)}
+                  onClick={() =>
+                    setSelectedCountry((current) =>
+                      current === c.id ? null : c.id,
+                    )
+                  }
                 >
                   <circle
                     cx={c.x}
                     cy={c.y}
                     r={24}
-                    fill="#111922"
+                    fill={isSelected ? `${c.color}20` : "#111922"}
                     stroke={c.color}
-                    strokeWidth={hoveredCountry === c.id ? 3 : 1.5}
+                    strokeWidth={isSelected || hoveredCountry === c.id ? 3 : 1.5}
                     strokeOpacity={isActive ? 1 : 0.25}
                     style={{ transition: "all 0.2s" }}
                   />
@@ -671,6 +775,70 @@ export default function RelationshipSection() {
 
         {/* Relationship table */}
         <div style={{ marginTop: 40 }}>
+          {selectedCountry && selectedTopRelationship && (
+            <div
+              style={{
+                marginBottom: 20,
+                border: `1px solid ${REL_STYLES[selectedTopRelationship.type].color}66`,
+                background: `${REL_STYLES[selectedTopRelationship.type].color}10`,
+                borderRadius: 12,
+                padding: "16px 18px",
+              }}
+            >
+              <div
+                style={{
+                  marginBottom: 8,
+                  color: "#7a8899",
+                  fontFamily: "JetBrains Mono, monospace",
+                  fontSize: 11,
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                }}
+              >
+                Top relationship for {selectedCountryName}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  marginBottom: 8,
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 700,
+                    color: "#dde4ee",
+                    fontSize: 15,
+                  }}
+                >
+                  {selectedTopRelationship.from === selectedCountry
+                    ? selectedTopRelationship.to
+                    : selectedTopRelationship.from}
+                </span>
+                <span
+                  style={{
+                    fontFamily: "JetBrains Mono, monospace",
+                    fontSize: 11,
+                    color: REL_STYLES[selectedTopRelationship.type].color,
+                    background: `${REL_STYLES[selectedTopRelationship.type].color}20`,
+                    padding: "3px 8px",
+                    borderRadius: 4,
+                  }}
+                >
+                  {selectedTopRelationship.type.toUpperCase()}
+                </span>
+              </div>
+              <div style={{ color: "#dde4ee", fontSize: 14, fontWeight: 600, marginBottom: 4 }}>
+                {selectedTopRelationship.label}
+              </div>
+              <div style={{ color: "#7a8899", fontSize: 13, lineHeight: 1.6 }}>
+                {selectedTopRelationship.detail}
+              </div>
+            </div>
+          )}
+
           <h3
             style={{
               fontFamily: "Fraunces, serif",
@@ -680,8 +848,43 @@ export default function RelationshipSection() {
               marginBottom: 20,
             }}
           >
-            All Bilateral Relationships
+            {selectedCountryName
+              ? `All Bilateral Relationships for ${selectedCountryName}`
+              : "All Bilateral Relationships"}
           </h3>
+          <div
+            style={{
+              marginTop: 20,
+              marginBottom: 20,
+              padding: "16px 18px",
+              border: "1px solid #1a2435",
+              borderRadius: 12,
+              background: "rgba(68, 136, 255, 0.08)",
+            }}
+          >
+            <div
+              style={{
+                marginBottom: 8,
+                color: "#dfa92a",
+                fontFamily: "JetBrains Mono, monospace",
+                fontSize: 11,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+              }}
+            >
+              Alliance summary
+            </div>
+            <div
+              style={{
+                color: "#dfe8f3",
+                fontSize: 14,
+                lineHeight: 1.75,
+              }}
+            >
+              {allianceSummary}
+            </div>
+          </div>
+
           <div style={{ overflowX: "auto" }}>
             <table
               style={{
@@ -711,7 +914,7 @@ export default function RelationshipSection() {
                 </tr>
               </thead>
               <tbody>
-                {relationships.map((r) => {
+                {filteredRelationships.map((r) => {
                   const s = REL_STYLES[r.type]
                   return (
                     <tr

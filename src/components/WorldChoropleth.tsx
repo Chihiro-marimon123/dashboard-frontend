@@ -21,9 +21,10 @@ interface WorldChoroplethProps {
   tooltipFn: (id: string) => TooltipContent | null;
   markers?: MapMarker[];
   children?: React.ReactNode;
+  highlightedCountryId?: string | null;
 }
 
-export default function WorldChoropleth({ colorFn, tooltipFn, markers, children }: WorldChoroplethProps) {
+export default function WorldChoropleth({ colorFn, tooltipFn, markers, children, highlightedCountryId }: WorldChoroplethProps) {
   const [tooltip, setTooltip] = useState<{ content: TooltipContent; x: number; y: number } | null>(null);
 
   return (
@@ -39,13 +40,14 @@ export default function WorldChoropleth({ colorFn, tooltipFn, markers, children 
           {({ geographies }) =>
             geographies.map((geo) => {
               const id = String(geo.id);
+              const isHighlighted = highlightedCountryId !== null && highlightedCountryId !== undefined && id === highlightedCountryId;
               return (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill={colorFn(id)}
-                  stroke="#0c1420"
-                  strokeWidth={0.4}
+                  fill={isHighlighted ? "#f6d365" : colorFn(id)}
+                  stroke={isHighlighted ? "#ffffff" : "#0c1420"}
+                  strokeWidth={isHighlighted ? 1.2 : 0.4}
                   onMouseEnter={(evt: React.MouseEvent) => {
                     const info = tooltipFn(id);
                     if (info) setTooltip({ content: info, x: evt.clientX, y: evt.clientY });
@@ -56,7 +58,7 @@ export default function WorldChoropleth({ colorFn, tooltipFn, markers, children 
                   onMouseLeave={() => setTooltip(null)}
                   style={{
                     default: { outline: "none" },
-                    hover: { outline: "none", opacity: 0.75 },
+                    hover: { outline: "none", opacity: isHighlighted ? 1 : 0.75 },
                     pressed: { outline: "none" },
                   }}
                 />
