@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
+import { geoNaturalEarth1 } from "d3-geo";
+import type { ConflictTradeRoute } from "../data";
 
 export const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 export const MAP_WIDTH = 800;
@@ -20,11 +22,34 @@ interface WorldChoroplethProps {
   colorFn: (id: string) => string;
   tooltipFn: (id: string) => TooltipContent | null;
   markers?: MapMarker[];
+  tradeRoutes?: ConflictTradeRoute[];
   children?: React.ReactNode;
   highlightedCountryId?: string | null;
 }
 
-export default function WorldChoropleth({ colorFn, tooltipFn, markers, children, highlightedCountryId }: WorldChoroplethProps) {
+const routeProjection = geoNaturalEarth1().scale(155).translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
+
+function routePath(route: ConflictTradeRoute) {
+  const start = routeProjection(route.originCoords);
+  const end = routeProjection(route.destinationCoords);
+  if (!start || !end) return null;
+  const dx = end[0] - start[0];
+  const dy = end[1] - start[1];
+  const distance = Math.hypot(dx, dy);
+  const bend = Math.min(distance * 0.18, 34);
+  const controlX = (start[0] + end[0]) / 2 - (dy / distance) * bend;
+  const controlY = (start[1] + end[1]) / 2 + (dx / distance) * bend;
+  const angle = Math.atan2(end[1] - controlY, end[0] - controlX);
+  const arrowSize = 7;
+  const arrow = [
+    `${end[0]},${end[1]}`,
+    `${end[0] - arrowSize * Math.cos(angle - Math.PI / 6)},${end[1] - arrowSize * Math.sin(angle - Math.PI / 6)}`,
+    `${end[0] - arrowSize * Math.cos(angle + Math.PI / 6)},${end[1] - arrowSize * Math.sin(angle + Math.PI / 6)}`,
+  ].join(" ");
+  return { d: `M ${start[0]},${start[1]} Q ${controlX},${controlY} ${end[0]},${end[1]}`, arrow };
+}
+
+export default function WorldChoropleth({ colorFn, tooltipFn, markers, tradeRoutes, children, highlightedCountryId }: WorldChoroplethProps) {
   const [tooltip, setTooltip] = useState<{ content: TooltipContent; x: number; y: number } | null>(null);
 
   return (
@@ -79,6 +104,23 @@ export default function WorldChoropleth({ colorFn, tooltipFn, markers, children,
             </text>
           </Marker>
         ))}
+        {tradeRoutes?.map((route) => {
+          const geometry = routePath(route);
+          if (!geometry) return null;
+          const color = route.afterValueUsd >= route.beforeValueUsd ? "#22c55e" : "#ef4444";
+          return (
+            <g key={`${route.rank}-${route.hsCode}-${route.origin}-${route.destination}`}>
+              <path d={geometry.d} fill="none" stroke={color} strokeWidth={2.5} strokeOpacity={0.9} strokeLinecap="round" />
+              <polygon points={geometry.arrow} fill={color} />
+              <Marker coordinates={route.originCoords}>
+                <circle r={3.5} fill={color} stroke="#070b10" strokeWidth={1} />
+              </Marker>
+              <Marker coordinates={route.destinationCoords}>
+                <circle r={3.5} fill={color} stroke="#070b10" strokeWidth={1} />
+              </Marker>
+            </g>
+          );
+        })}
         {children}
       </ComposableMap>
 
@@ -112,25 +154,25 @@ export default function WorldChoropleth({ colorFn, tooltipFn, markers, children,
 export function stabilityColor(v: number | undefined): string {
   if (v === undefined) return "#1a2435";
   if (v < -2) return "#7b1a1a";
-  if (v < -1.5) return "#a82020";
-  if (v < -1) return "#c0392b";
-  if (v < -0.5) return "#c96033";
-  if (v < 0) return "#b07a3a";
-  if (v < 0.5) return "#4a5568";
-  if (v < 1) return "#1a6b5e";
-  if (v < 1.5) return "#147a5a";
+  if (v < -1.5) return "#d94d2b";
+  if (v < -1) return "#e77d3a";
+  if (v < -0.5) return "#e9a13b";
+  if (v < 0) return "#e8d76d";
+  if (v < 0.5) return "#a8d76b";
+  if (v < 1) return "#5ebd7a";
+  if (v < 1.5) return "#2b9b5d";
   return "#0e6647";
 }
 
 export function gdpColor(v: number | undefined): string {
   if (v === undefined) return "#1a2435";
   if (v < -15) return "#7b1a1a";
-  if (v < -5) return "#c0392b";
-  if (v < 0) return "#b06030";
-  if (v < 2) return "#3a4a5e";
-  if (v < 5) return "#1a4a8a";
-  if (v < 8) return "#1562a6";
-  return "#0f7ac8";
+  if (v < -5) return "#d94d2b";
+  if (v < 0) return "#f0a34a";
+  if (v < 2) return "#e9d66a";
+  if (v < 5) return "#a9d9b2";
+  if (v < 8) return "#7ec8d8";
+  return "#1d4f9b";
 }
 
 export const QUADRANT_COLORS: Record<string, string> = {

@@ -13,18 +13,32 @@ export interface ConflictRecord {
   lon: number;
 }
 
-export interface TradeFlow {
-  id: string;
-  fromLabel: string;
-  toLabel: string;
-  fromCoords: [number, number];
-  toCoords: [number, number];
+export interface TradeSnapshot {
+  year: number;
+  exports: number | null;
+  imports: number | null;
+}
+
+export interface ConflictTradeData {
+  rank: number;
+  countryId: string;
+  before: TradeSnapshot;
+  after: TradeSnapshot;
+  latest: TradeSnapshot;
+}
+
+export interface ConflictTradeRoute {
+  rank: number;
   commodity: string;
-  volume2023: number;
-  volume2024: number;
-  unit: string;
-  color: string;
-  conflictRank: number;
+  hsCode: string;
+  origin: string;
+  destination: string;
+  originCoords: [number, number];
+  destinationCoords: [number, number];
+  beforeYear: number;
+  beforeValueUsd: number;
+  afterYear: number;
+  afterValueUsd: number;
 }
 
 export interface UnstableCountry {
@@ -274,74 +288,31 @@ export const conflictsByEconomicLoss: ConflictRecord[] = [
   },
 ];
 
-// Trade flows: 2023 vs 2024
-export const tradeFlows: TradeFlow[] = [
-  // Russia wheat exports (record highs despite war)
-  {
-    id: "rus-tur-wheat", fromLabel: "Russia", toLabel: "Turkey",
-    fromCoords: [37.6, 55.8], toCoords: [32.9, 39.9],
-    commodity: "Wheat", volume2023: 11.5, volume2024: 12.8, unit: "Mt", color: "#dfa92a", conflictRank: 1,
-  },
-  {
-    id: "rus-egy-wheat", fromLabel: "Russia", toLabel: "Egypt",
-    fromCoords: [37.6, 55.8], toCoords: [31.2, 30.1],
-    commodity: "Wheat", volume2023: 8.2, volume2024: 9.1, unit: "Mt", color: "#dfa92a", conflictRank: 1,
-  },
-  {
-    id: "rus-ind-wheat", fromLabel: "Russia", toLabel: "India",
-    fromCoords: [37.6, 55.8], toCoords: [78.9, 20.6],
-    commodity: "Wheat", volume2023: 1.6, volume2024: 2.2, unit: "Mt", color: "#dfa92a", conflictRank: 1,
-  },
-  // Russia natural gas to Europe (near zero)
-  {
-    id: "rus-deu-gas", fromLabel: "Russia", toLabel: "Germany",
-    fromCoords: [37.6, 55.8], toCoords: [13.4, 52.5],
-    commodity: "Natural Gas", volume2023: 8.0, volume2024: 4.2, unit: "bcm", color: "#4488ff", conflictRank: 1,
-  },
-  {
-    id: "rus-ita-gas", fromLabel: "Russia", toLabel: "Italy",
-    fromCoords: [37.6, 55.8], toCoords: [12.5, 41.9],
-    commodity: "Natural Gas", volume2023: 5.2, volume2024: 3.8, unit: "bcm", color: "#4488ff", conflictRank: 1,
-  },
-  // Russia crude oil - redirected to Asia
-  {
-    id: "rus-chn-oil", fromLabel: "Russia", toLabel: "China",
-    fromCoords: [37.6, 55.8], toCoords: [116.4, 39.9],
-    commodity: "Crude Oil", volume2023: 107.0, volume2024: 113.0, unit: "Mt", color: "#e879f9", conflictRank: 1,
-  },
-  {
-    id: "rus-ind-oil", fromLabel: "Russia", toLabel: "India",
-    fromCoords: [37.6, 55.8], toCoords: [78.9, 20.6],
-    commodity: "Crude Oil", volume2023: 86.0, volume2024: 100.0, unit: "Mt", color: "#e879f9", conflictRank: 1,
-  },
-  // Ukraine grain exports (recovering via alternative routes)
-  {
-    id: "ukr-egy-grain", fromLabel: "Ukraine", toLabel: "Egypt",
-    fromCoords: [30.5, 50.5], toCoords: [31.2, 30.1],
-    commodity: "Grain", volume2023: 4.8, volume2024: 6.2, unit: "Mt", color: "#22c55e", conflictRank: 1,
-  },
-  {
-    id: "ukr-chn-grain", fromLabel: "Ukraine", toLabel: "China",
-    fromCoords: [30.5, 50.5], toCoords: [116.4, 39.9],
-    commodity: "Grain", volume2023: 5.2, volume2024: 7.0, unit: "Mt", color: "#22c55e", conflictRank: 1,
-  },
-  {
-    id: "ukr-ind-grain", fromLabel: "Ukraine", toLabel: "India",
-    fromCoords: [30.5, 50.5], toCoords: [78.9, 20.6],
-    commodity: "Grain", volume2023: 1.4, volume2024: 2.1, unit: "Mt", color: "#22c55e", conflictRank: 1,
-  },
-  // Libya oil
-  {
-    id: "lby-ita-oil", fromLabel: "Libya", toLabel: "Italy",
-    fromCoords: [17.2, 26.3], toCoords: [12.5, 41.9],
-    commodity: "Crude Oil", volume2023: 9.2, volume2024: 11.4, unit: "Mt", color: "#fb923c", conflictRank: 6,
-  },
-  // Venezuela oil
-  {
-    id: "ven-usa-oil", fromLabel: "Venezuela", toLabel: "USA",
-    fromCoords: [-66.6, 6.4], toCoords: [-95.7, 29.8],
-    commodity: "Crude Oil", volume2023: 2.8, volume2024: 3.2, unit: "Mt", color: "#fb923c", conflictRank: 3,
-  },
+// World Bank merchandise exports/imports, current US$ billions.
+// The three snapshots are the year before onset, the year after onset, and the latest year available.
+export const conflictTradeData: ConflictTradeData[] = [
+  { rank: 1, countryId: "804", before: { year: 2021, exports: 68.073, imports: 72.843 }, after: { year: 2023, exports: 37.585, imports: 63.765 }, latest: { year: 2025, exports: 40.368, imports: 83.573 } },
+  { rank: 2, countryId: "760", before: { year: 2010, exports: 12.796, imports: 17.562 }, after: { year: 2012, exports: 3.059, imports: 12.583 }, latest: { year: 2022, exports: 3.385, imports: 5.027 } },
+  { rank: 3, countryId: "862", before: { year: 2012, exports: 97.340, imports: 51.331 }, after: { year: 2014, exports: 74.714, imports: 43.169 }, latest: { year: 2025, exports: 8.600, imports: 13.805 } },
+  { rank: 4, countryId: "275", before: { year: 2022, exports: null, imports: null }, after: { year: 2024, exports: null, imports: null }, latest: { year: 2025, exports: null, imports: null } },
+  { rank: 5, countryId: "729", before: { year: 2022, exports: 4.357, imports: 11.095 }, after: { year: 2024, exports: 3.134, imports: 4.911 }, latest: { year: 2025, exports: 2.800, imports: 6.200 } },
+  { rank: 6, countryId: "434", before: { year: 2010, exports: 48.745, imports: 26.324 }, after: { year: 2012, exports: 59.944, imports: 21.595 }, latest: { year: 2025, exports: 30.085, imports: 19.312 } },
+  { rank: 7, countryId: "887", before: { year: 2014, exports: 2.417, imports: 12.042 }, after: { year: 2016, exports: 0.411, imports: 3.059 }, latest: { year: 2025, exports: 0.196, imports: 4.649 } },
+  { rank: 8, countryId: "004", before: { year: 2000, exports: 0.137, imports: 1.176 }, after: { year: 2002, exports: 0.100, imports: 2.452 }, latest: { year: 2025, exports: 0.926, imports: 3.606 } },
+  { rank: 9, countryId: "422", before: { year: 2018, exports: 3.830, imports: 20.396 }, after: { year: 2020, exports: 4.085, imports: 11.355 }, latest: { year: 2025, exports: 4.598, imports: 21.672 } },
+  { rank: 10, countryId: "104", before: { year: 2020, exports: 16.692, imports: 17.947 }, after: { year: 2022, exports: 17.085, imports: 17.403 }, latest: { year: 2025, exports: 15.298, imports: 14.331 } },
+];
+
+// Verified bilateral changes from UN Comtrade annual HS records.
+export const conflictTradeRoutes: ConflictTradeRoute[] = [
+  { rank: 1, commodity: "Wheat and meslin", hsCode: "1001", origin: "Ukraine", destination: "Türkiye", originCoords: [30.5, 50.5], destinationCoords: [32.9, 39.9], beforeYear: 2021, beforeValueUsd: 384667531.98, afterYear: 2023, afterValueUsd: 447235000 },
+  { rank: 9, commodity: "Precious metals and stones", hsCode: "71", origin: "Lebanon", destination: "United Arab Emirates", originCoords: [35.9, 33.9], destinationCoords: [54.37, 24.45], beforeYear: 2018, beforeValueUsd: 267352085, afterYear: 2020, afterValueUsd: 476678613 },
+  { rank: 9, commodity: "Mineral fuels", hsCode: "27", origin: "Germany", destination: "Lebanon", originCoords: [10.45, 51.16], destinationCoords: [35.9, 33.9], beforeYear: 2018, beforeValueUsd: 12149813, afterYear: 2020, afterValueUsd: 3716131 },
+  { rank: 9, commodity: "Electrical machinery", hsCode: "85", origin: "China", destination: "Lebanon", originCoords: [104.2, 35.9], destinationCoords: [35.9, 33.9], beforeYear: 2018, beforeValueUsd: 404688487, afterYear: 2020, afterValueUsd: 156027013 },
+  { rank: 10, commodity: "Natural gas", hsCode: "2711", origin: "Myanmar", destination: "Thailand", originCoords: [96.1, 19.7], destinationCoords: [100.99, 15.87], beforeYear: 2020, beforeValueUsd: 1817970000, afterYear: 2022, afterValueUsd: 2466270000 },
+  { rank: 10, commodity: "Edible vegetables and roots", hsCode: "07", origin: "Myanmar", destination: "China", originCoords: [96.1, 19.7], destinationCoords: [104.2, 35.9], beforeYear: 2020, beforeValueUsd: 412310411.955, afterYear: 2022, afterValueUsd: 484890399.696 },
+  { rank: 10, commodity: "Electrical machinery", hsCode: "85", origin: "China", destination: "Myanmar", originCoords: [104.2, 35.9], destinationCoords: [96.1, 19.7], beforeYear: 2020, beforeValueUsd: 1061310614.898, afterYear: 2022, afterValueUsd: 412185183.837 },
+  { rank: 10, commodity: "Mineral fuels", hsCode: "27", origin: "Singapore", destination: "Myanmar", originCoords: [103.82, 1.35], destinationCoords: [96.1, 19.7], beforeYear: 2020, beforeValueUsd: 1819037367.71, afterYear: 2022, afterValueUsd: 4013171760.35 },
 ];
 
 export const unstableCountriesIndex: UnstableCountry[] = [
@@ -403,7 +374,7 @@ export const unstableCountriesIndex: UnstableCountry[] = [
   {
     country: "Venezuela", flag: "🇻🇪", score: -1.88,
     situation: "Maduro stole July 2024 election; 7.7M refugees fled; GDP contracted 75% since 2013; opposition leaders arrested",
-    detail: "Venezuela's collapse from the wealthiest country in South America (1970s oil boom) to a humanitarian catastrophe is one of modern history's most dramatic economic implosions: under Hugo Chavez (1999-2013) and Nicolas Maduro (2013-present), the government nationalized industries, imposed price controls, and when oil prices crashed in 2014, the economy entered a death spiral that shrunk GDP by 75% between 2013 and 2021 — a contraction deeper than the United States experienced during the Great Depression over the same timeframe, and achieved without any war or natural disaster. In the July 2024 presidential election, opposition candidate Edmundo Gonzalez won a documented majority according to voting tallies collected by opposition witnesses from across the country; Maduro nonetheless declared himself the winner, triggering international condemnation, mass protests, 25+ killed demonstrators, and over 2,000 arrests. Venezuela now hosts 7.7 million refugees and migrants — the largest displacement crisis in Latin American history, surpassing even the Syrian crisis in absolute numbers, with Venezuelans crossing the deadly Darien Gap jungle at rates comparable to wartime refugee flows just to reach the US. Venezuela sits atop the world's largest proven oil reserves (300 billion barrels), yet infrastructure has so deteriorated that the country regularly suffers blackouts, water shortages, and medical supply collapses; per-capita income has fallen below $3,000, compared to over $15,000 in neighboring Brazil. Venezuela is predominantly Catholic (71%), Spanish-speaking, and possesses extraordinary natural beauty: Angel Falls (world's highest uninterrupted waterfall), the tepui plateaus that inspired Arthur Conan Doyle's 'The Lost World,' and Los Roques coral archipelago. Venezuela produced liberator Simon Bolivar (who freed six South American nations), baseball legends Miguel Cabrera and Johan Santana, and holds the record for the most Miss Universe titles of any country.",
+    detail: "Venezuela sits on the world's largest proven oil reserves but has suffered a deep economic and humanitarian crisis since the early 2010s. State control, price caps, and dependence on oil weakened public institutions and left the economy badly damaged, with severe contraction, shortages, and mass migration. The disputed 2024 election and continued repression have deepened the political crisis and kept the country in a state of instability.",
   },
   {
     country: "Lebanon", flag: "🇱🇧", score: -1.88,

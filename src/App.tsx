@@ -534,10 +534,10 @@ function About() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {[
-              { source: "UCDP v26.1", label: "Battle-Related Deaths", url: "ucdp.uu.se" },
-              { source: "World Bank WGI 2022", label: "Political Stability Estimates", url: "worldbank.org" },
-              { source: "World Bank NY.GDP.MKTP.KD.ZG", label: "Annual GDP Growth", url: "worldbank.org" },
-              { source: "UN Comtrade + IEA", label: "Trade Flow Data", url: "comtradeplus.un.org" },
+              { source: "UCDP v26.1", label: "Battle-Related Deaths", url: "https://ucdp.uu.se/" },
+              { source: "World Bank WGI 2022", label: "Political Stability Estimates", url: "https://www.worldbank.org/en/publication/worldwide-governance-indicators" },
+              { source: "World Bank NY.GDP.MKTP.KD.ZG", label: "Annual GDP Growth", url: "https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG" },
+              { source: "UN Comtrade + IEA", label: "Trade Flow Data", url: "https://comtradeplus.un.org/" },
             ].map((s) => (
               <div key={s.source} style={{
                 background: "#111922",
@@ -549,8 +549,31 @@ function About() {
                   {s.source}
                 </div>
                 <div style={{ fontSize: 13, color: "#7a8899" }}>{s.label}</div>
+                <a href={s.url} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#8fb3ff", textDecoration: "none", display: "inline-block", marginTop: 8 }}>
+                  {s.url}
+                </a>
               </div>
             ))}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid #1a2435" }}>
+          <div style={{ marginBottom: 12, fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: "#dfa92a", letterSpacing: 2 }}>
+            REFERENCE DATASETS
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+            <a href="https://ucdp.uu.se/" target="_blank" rel="noreferrer" style={{ color: "#dde4ee", textDecoration: "none", border: "1px solid #243447", borderRadius: 999, padding: "8px 12px", background: "rgba(255,255,255,0.02)" }}>
+              UCDP Georeferenced Event Dataset (GED)
+            </a>
+            <a href="https://www.worldbank.org/en/publication/worldwide-governance-indicators" target="_blank" rel="noreferrer" style={{ color: "#dde4ee", textDecoration: "none", border: "1px solid #243447", borderRadius: 999, padding: "8px 12px", background: "rgba(255,255,255,0.02)" }}>
+              World Bank Worldwide Governance Indicators
+            </a>
+            <a href="https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG" target="_blank" rel="noreferrer" style={{ color: "#dde4ee", textDecoration: "none", border: "1px solid #243447", borderRadius: 999, padding: "8px 12px", background: "rgba(255,255,255,0.02)" }}>
+              World Bank GDP Growth Data
+            </a>
+            <a href="https://comtradeplus.un.org/" target="_blank" rel="noreferrer" style={{ color: "#dde4ee", textDecoration: "none", border: "1px solid #243447", borderRadius: 999, padding: "8px 12px", background: "rgba(255,255,255,0.02)" }}>
+              UN Comtrade
+            </a>
           </div>
         </div>
       </div>
@@ -621,18 +644,18 @@ function Index() {
 
 const QUIZ_QUESTIONS = [
   {
-    question: "Is Finland a member of NATO?",
-    options: ["Yes", "No", "Not yet decided", "It applied but was rejected"],
+    question: "Does Finland belong to NATO?",
+    options: ["Yes", "No", "Undecided", "It applied but was rejected"],
     correct: "Yes",
   },
   {
     question: "In the Gaza conflict, which side is the United States mainly aligned with?",
-    options: ["Gaza", "Israel", "Neither side", "A neutral UN agency"],
+    options: ["Gaza", "Israel", "Neither", "The UN neutral agency"],
     correct: "Israel",
   },
   {
     question: "What was the name of the agreement Britain made with both Jews and Palestinians during World War I?",
-    options: ["Sykes-Picot Agreement", "Balfour Declaration", "Rose Report", "Kellogg Accord"],
+    options: ["Sykes-Picot Agreement", "Balfour Declaration", "Rose Report", "Kellogg Agreement"],
     correct: "Balfour Declaration",
   },
   {
@@ -641,32 +664,32 @@ const QUIZ_QUESTIONS = [
     correct: "North Atlantic Treaty Organization",
   },
   {
-    question: "Which country did Russia fight in the war that began in 2022?",
+    question: "Which country was the target of Russia's 2022 war?",
     options: ["Poland", "Ukraine", "Belarus", "Moldova"],
     correct: "Ukraine",
   },
   {
-    question: "Which region is at the center of the Israeli-Palestinian conflict?",
-    options: ["The Strait of Hormuz", "Gaza Strip and West Bank", "The Suez Canal", "Southern Lebanon"],
+    question: "Which region is at the center of the Israel-Palestine conflict?",
+    options: ["Strait of Hormuz", "Gaza Strip and West Bank", "Suez Canal", "Southern Lebanon"],
     correct: "Gaza Strip and West Bank",
   },
   {
-    question: "Which maritime route has the strongest Chinese strategic influence?",
+    question: "Which sea route is one of the most strategically important for China?",
     options: ["Malacca Strait", "Dover Strait", "Berlin Canal", "Asian Sea Route"],
     correct: "Malacca Strait",
   },
   {
-    question: "Which treaty is widely known as the main security framework of the EU?",
+    question: "Which treaty is widely known as the main security framework of the European Union?",
     options: ["Schengen Agreement", "Maastricht Treaty", "Washington Agreement", "Paris Agreement"],
     correct: "Maastricht Treaty",
   },
   {
-    question: "What kind of security alliance does Japan currently maintain with the United States?",
-    options: ["Japan-US Alliance", "Japan-EU Alliance", "Japan-China Friendship Treaty", "East Asian Defense Pact"],
+    question: "What kind of security alliance does Japan currently have with the United States?",
+    options: ["Japan-US Alliance", "Japan-EU Alliance", "Japan-China Friendship Treaty", "East Asia Defense Agreement"],
     correct: "Japan-US Alliance",
   },
   {
-    question: "What is the most common geographical name used for the Middle East region?",
+    question: "Which geographic label is most commonly used to refer to the broader Middle East?",
     options: ["North Africa", "West Asia and North Africa", "Eastern Europe", "South Asia"],
     correct: "West Asia and North Africa",
   },
@@ -762,7 +785,7 @@ function QuizSection() {
                       color: isCorrect ? "#6de5a8" : "#f7b3b3",
                     }}
                   >
-                    {isCorrect ? "⭕️ Correct" : `❌ The correct answer is: ${quiz.correct}`}
+                    {isCorrect ? "⭕️ Correct!" : `❌ Incorrect. The correct answer is: ${quiz.correct}`}
                   </div>
                 )}
               </div>
@@ -803,8 +826,7 @@ function Footer() {
 }
 
 function CountryRelationships() {
-  const [selectedProfile, setSelectedProfile] = useState<(typeof RELATIONSHIP_INFOGRAPHICS)[number] | null>(null);
-  const [autoIndex, setAutoIndex] = useState(0);
+  const [selectedProfile, setSelectedProfile] = useState<(typeof RELATIONSHIP_INFOGRAPHICS)[number] | null>(RELATIONSHIP_INFOGRAPHICS[0]);
   const [japanSlideIndex, setJapanSlideIndex] = useState(0);
   const [chinaSlideIndex, setChinaSlideIndex] = useState(0);
   const [ukSlideIndex, setUkSlideIndex] = useState(0);
@@ -816,149 +838,76 @@ function CountryRelationships() {
   const [russiaSlideIndex, setRussiaSlideIndex] = useState(0);
   const [indiaSlideIndex, setIndiaSlideIndex] = useState(0);
 
-  useEffect(() => {
-    if (selectedProfile) return;
-    const timer = window.setInterval(() => {
-      setAutoIndex((current) => (current + 1) % COUNTRY_ROTATION.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [selectedProfile]);
-
-  useEffect(() => {
-    const isJapanActive = selectedProfile ? selectedProfile.country === "Japan" : COUNTRY_ROTATION[autoIndex] === "Japan";
-    if (!isJapanActive) return;
-    const timer = window.setInterval(() => {
-      setJapanSlideIndex((current) => (current + 1) % JAPAN_SLIDES.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [selectedProfile, autoIndex]);
-
-  useEffect(() => {
-    const isChinaActive = selectedProfile ? selectedProfile.country === "China" : COUNTRY_ROTATION[autoIndex] === "China";
-    if (!isChinaActive) return;
-    const timer = window.setInterval(() => {
-      setChinaSlideIndex((current) => (current + 1) % CHINA_SLIDES.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [selectedProfile, autoIndex]);
-
-  useEffect(() => {
-    const isUkActive = selectedProfile ? selectedProfile.country === "United Kingdom" : COUNTRY_ROTATION[autoIndex] === "United Kingdom";
-    if (!isUkActive) return;
-    const timer = window.setInterval(() => {
-      setUkSlideIndex((current) => (current + 1) % UK_SLIDES.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [selectedProfile, autoIndex]);
-
-  useEffect(() => {
-    const isGermanyActive = selectedProfile ? selectedProfile.country === "Germany" : COUNTRY_ROTATION[autoIndex] === "Germany";
-    if (!isGermanyActive) return;
-    const timer = window.setInterval(() => {
-      setGermanySlideIndex((current) => (current + 1) % GERMANY_SLIDES.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [selectedProfile, autoIndex]);
-
-  useEffect(() => {
-    const isCanadaActive = selectedProfile ? selectedProfile.country === "Canada" : COUNTRY_ROTATION[autoIndex] === "Canada";
-    if (!isCanadaActive) return;
-    const timer = window.setInterval(() => {
-      setCanadaSlideIndex((current) => (current + 1) % CANADA_SLIDES.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [selectedProfile, autoIndex]);
-
-  useEffect(() => {
-    const isUsActive = selectedProfile ? selectedProfile.country === "United States" : COUNTRY_ROTATION[autoIndex] === "United States";
-    if (!isUsActive) return;
-    const timer = window.setInterval(() => {
-      setUsSlideIndex((current) => (current + 1) % US_SLIDES.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [selectedProfile, autoIndex]);
-
-  useEffect(() => {
-    const isItalyActive = selectedProfile ? selectedProfile.country === "Italy" : COUNTRY_ROTATION[autoIndex] === "Italy";
-    if (!isItalyActive) return;
-    const timer = window.setInterval(() => {
-      setItalySlideIndex((current) => (current + 1) % ITALY_SLIDES.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [selectedProfile, autoIndex]);
-
-  useEffect(() => {
-    const isFranceActive = selectedProfile ? selectedProfile.country === "France" : COUNTRY_ROTATION[autoIndex] === "France";
-    if (!isFranceActive) return;
-    const timer = window.setInterval(() => {
-      setFranceSlideIndex((current) => (current + 1) % FRANCE_SLIDES.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [selectedProfile, autoIndex]);
-
-  useEffect(() => {
-    const isRussiaActive = selectedProfile ? selectedProfile.country === "Russia" : COUNTRY_ROTATION[autoIndex] === "Russia";
-    if (!isRussiaActive) return;
-    const timer = window.setInterval(() => {
-      setRussiaSlideIndex((current) => (current + 1) % RUSSIA_SLIDES.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [selectedProfile, autoIndex]);
-
-  useEffect(() => {
-    const isIndiaActive = selectedProfile ? selectedProfile.country === "India" : COUNTRY_ROTATION[autoIndex] === "India";
-    if (!isIndiaActive) return;
-    const timer = window.setInterval(() => {
-      setIndiaSlideIndex((current) => (current + 1) % INDIA_SLIDES.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [selectedProfile, autoIndex]);
-
-  const activeCountry = selectedProfile ? selectedProfile.country : COUNTRY_ROTATION[autoIndex];
+  const activeCountry = selectedProfile ? selectedProfile.country : RELATIONSHIP_INFOGRAPHICS[0].country;
   const activeProfile = selectedProfile ?? RELATIONSHIP_INFOGRAPHICS.find((profile) => profile.country === activeCountry) ?? RELATIONSHIP_INFOGRAPHICS[0];
   const activeDescription = COUNTRY_BRIEF_DESCRIPTIONS[activeProfile.country] ?? ["", ""];
-  const currentImage = activeCountry === "Japan"
-    ? JAPAN_SLIDES[japanSlideIndex]
-    : activeCountry === "China"
-      ? CHINA_SLIDES[chinaSlideIndex]
-      : activeCountry === "United Kingdom"
-        ? UK_SLIDES[ukSlideIndex]
-        : activeCountry === "Germany"
-          ? GERMANY_SLIDES[germanySlideIndex]
-          : activeCountry === "Canada"
-            ? CANADA_SLIDES[canadaSlideIndex]
-            : activeCountry === "United States"
-              ? US_SLIDES[usSlideIndex]
-              : activeCountry === "Italy"
-                ? ITALY_SLIDES[italySlideIndex]
-                : activeCountry === "France"
-                  ? FRANCE_SLIDES[franceSlideIndex]
-                  : activeCountry === "Russia"
-                    ? RUSSIA_SLIDES[russiaSlideIndex]
-                    : activeCountry === "India"
-                      ? INDIA_SLIDES[indiaSlideIndex]
-                      : activeProfile.image;
-  const currentAltText = activeCountry === "Japan"
-    ? `Japan relationship visual ${japanSlideIndex + 1}`
-    : activeCountry === "China"
-      ? `China relationship visual ${chinaSlideIndex + 1}`
-      : activeCountry === "United Kingdom"
-        ? `United Kingdom relationship visual ${ukSlideIndex + 1}`
-        : activeCountry === "Germany"
-          ? `Germany relationship visual ${germanySlideIndex + 1}`
-          : activeCountry === "Canada"
-            ? `Canada relationship visual ${canadaSlideIndex + 1}`
-            : activeCountry === "United States"
-              ? `United States relationship visual ${usSlideIndex + 1}`
-              : activeCountry === "Italy"
-                ? `Italy relationship visual ${italySlideIndex + 1}`
-                : activeCountry === "France"
-                  ? `France relationship visual ${franceSlideIndex + 1}`
-                  : activeCountry === "Russia"
-                    ? `Russia relationship visual ${russiaSlideIndex + 1}`
-                    : activeCountry === "India"
-                      ? `India relationship visual ${indiaSlideIndex + 1}`
-                      : `${activeProfile.country} international relationships infographic`;
+
+  const getSlidesForCountry = (country: string) => {
+    switch (country) {
+      case "Japan": return JAPAN_SLIDES;
+      case "China": return CHINA_SLIDES;
+      case "United Kingdom": return UK_SLIDES;
+      case "Germany": return GERMANY_SLIDES;
+      case "Canada": return CANADA_SLIDES;
+      case "United States": return US_SLIDES;
+      case "Italy": return ITALY_SLIDES;
+      case "France": return FRANCE_SLIDES;
+      case "Russia": return RUSSIA_SLIDES;
+      case "India": return INDIA_SLIDES;
+      default: return [activeProfile.image];
+    }
+  };
+
+  const getSlideIndexForCountry = (country: string) => {
+    switch (country) {
+      case "Japan": return japanSlideIndex;
+      case "China": return chinaSlideIndex;
+      case "United Kingdom": return ukSlideIndex;
+      case "Germany": return germanySlideIndex;
+      case "Canada": return canadaSlideIndex;
+      case "United States": return usSlideIndex;
+      case "Italy": return italySlideIndex;
+      case "France": return franceSlideIndex;
+      case "Russia": return russiaSlideIndex;
+      case "India": return indiaSlideIndex;
+      default: return 0;
+    }
+  };
+
+  const setSlideIndexForCountry = (country: string, nextIndex: number) => {
+    const slides = getSlidesForCountry(country);
+    const wrappedIndex = (nextIndex + slides.length) % slides.length;
+
+    switch (country) {
+      case "Japan": setJapanSlideIndex(wrappedIndex); break;
+      case "China": setChinaSlideIndex(wrappedIndex); break;
+      case "United Kingdom": setUkSlideIndex(wrappedIndex); break;
+      case "Germany": setGermanySlideIndex(wrappedIndex); break;
+      case "Canada": setCanadaSlideIndex(wrappedIndex); break;
+      case "United States": setUsSlideIndex(wrappedIndex); break;
+      case "Italy": setItalySlideIndex(wrappedIndex); break;
+      case "France": setFranceSlideIndex(wrappedIndex); break;
+      case "Russia": setRussiaSlideIndex(wrappedIndex); break;
+      case "India": setIndiaSlideIndex(wrappedIndex); break;
+      default: break;
+    }
+  };
+
+  const goToPreviousSlide = () => {
+    const slides = getSlidesForCountry(activeCountry);
+    const currentIndex = getSlideIndexForCountry(activeCountry);
+    setSlideIndexForCountry(activeCountry, currentIndex - 1 + slides.length);
+  };
+
+  const goToNextSlide = () => {
+    const slides = getSlidesForCountry(activeCountry);
+    const currentIndex = getSlideIndexForCountry(activeCountry);
+    setSlideIndexForCountry(activeCountry, currentIndex + 1);
+  };
+
+  const currentSlideIndex = getSlideIndexForCountry(activeCountry);
+  const currentImage = getSlidesForCountry(activeCountry)[currentSlideIndex] ?? activeProfile.image;
+  const currentAltText = `${activeProfile.country} relationship visual ${currentSlideIndex + 1}`;
 
   return (
     <section id="country-relationships" style={{ background: "#070b10", padding: "80px 0", borderTop: "1px solid #1a2435" }}>
@@ -1051,23 +1000,69 @@ function CountryRelationships() {
               {activeProfile.country}
             </div>
           </div>
-          <img
-            src={currentImage}
-            alt={currentAltText}
-            style={{
-              display: "block",
-              width: "auto",
-              maxWidth: "100%",
-              height: "auto",
-              maxHeight: "78vh",
-              objectFit: "contain",
-              margin: "0 auto",
-              borderRadius: 8,
-              background: "#fff",
-              boxShadow: "0 16px 40px rgba(0,0,0,0.5)",
-              imageRendering: "auto",
-            }}
-          />
+
+          <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center" }}>
+            <button
+              type="button"
+              onClick={goToPreviousSlide}
+              aria-label="Previous country profile image"
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: "50%",
+                border: "1px solid #243447",
+                background: "#111922",
+                color: "#dde4ee",
+                fontSize: 24,
+                lineHeight: 1,
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+            >
+              ←
+            </button>
+
+            <div style={{ flex: "1 1 auto", display: "flex", justifyContent: "center" }}>
+              <img
+                src={currentImage}
+                alt={currentAltText}
+                style={{
+                  display: "block",
+                  width: "auto",
+                  maxWidth: "100%",
+                  height: "auto",
+                  maxHeight: "78vh",
+                  objectFit: "contain",
+                  margin: "0 auto",
+                  borderRadius: 8,
+                  background: "#fff",
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.5)",
+                  imageRendering: "auto",
+                }}
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={goToNextSlide}
+              aria-label="Next country profile image"
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: "50%",
+                border: "1px solid #243447",
+                background: "#111922",
+                color: "#dde4ee",
+                fontSize: 24,
+                lineHeight: 1,
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+            >
+              →
+            </button>
+          </div>
+
           <div style={{ marginTop: 16, color: "#dde4ee", fontSize: 14, lineHeight: 1.7 }}>
             <div>{activeDescription[0]}</div>
             <div style={{ color: "#7a8899" }}>{activeDescription[1]}</div>

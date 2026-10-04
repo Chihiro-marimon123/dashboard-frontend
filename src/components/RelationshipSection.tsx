@@ -16,7 +16,7 @@ interface Country {
 interface Relationship {
   from: string
   to: string
-  type: "alliance" | "partnership" | "cooperation" | "competitive" | "hostile" | "energy"
+  type: "alliance" | "partnership" | "cooperation" | "competitive" | "hostile"
   label: string
   detail: string
 }
@@ -322,12 +322,6 @@ const REL_STYLES: Record<string, {
     width: 2.5,
     label: "Hostile/Adversarial",
   },
-  energy: {
-    color: "#a855f7",
-    dash: "4 3",
-    width: 2,
-    label: "Energy Dependency",
-  },
 }
 
 function getCountry(id: string) {
@@ -338,7 +332,6 @@ const RELATIONSHIP_PRIORITY: Record<Relationship["type"], number> = {
   alliance: 5,
   partnership: 4,
   cooperation: 3,
-  energy: 2,
   competitive: 1,
   hostile: 0,
 }

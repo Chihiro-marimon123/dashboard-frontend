@@ -1,85 +1,66 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { geoNaturalEarth1 } from "d3-geo";
-import { conflictsByEconomicLoss, tradeFlows, ordinal, type TradeFlow } from "../data";
-import { GEO_URL, MAP_WIDTH, MAP_HEIGHT, gdpColor } from "./WorldChoropleth";
+import { conflictsByEconomicLoss, conflictTradeData, conflictTradeRoutes, ordinal, type ConflictTradeRoute } from "../data";
+import { GEO_URL, MAP_WIDTH, MAP_HEIGHT } from "./WorldChoropleth";
 
-const projection = geoNaturalEarth1()
+const TRADE_SNAPSHOTS = ["before", "after", "latest"] as const;
+type SnapshotKey = (typeof TRADE_SNAPSHOTS)[number];
+
+const SNAPSHOT_LABELS: Record<SnapshotKey, string> = {
+  before: "Year before conflict",
+  after: "Year after conflict began",
+  latest: "Latest available",
+};
+
+const routeProjection = geoNaturalEarth1()
   .scale(155)
   .translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
 
-function project([lon, lat]: [number, number]): [number, number] {
-  const p = projection([lon, lat]);
-  return p ? [p[0], p[1]] : [0, 0];
+function getRouteGeometry(route: ConflictTradeRoute) {
+  const start = routeProjection(route.originCoords);
+  const end = routeProjection(route.destinationCoords);
+  if (!start || !end) return null;
+
+  const dx = end[0] - start[0];
+  const dy = end[1] - start[1];
+  const distance = Math.hypot(dx, dy);
+  const bend = Math.min(distance * 0.18, 34);
+  const controlX = (start[0] + end[0]) / 2 - (dy / distance) * bend;
+  const controlY = (start[1] + end[1]) / 2 + (dx / distance) * bend;
+  const angle = Math.atan2(end[1] - controlY, end[0] - controlX);
+  const arrowSize = 7;
+  const arrow = [
+    `${end[0]},${end[1]}`,
+    `${end[0] - arrowSize * Math.cos(angle - Math.PI / 6)},${end[1] - arrowSize * Math.sin(angle - Math.PI / 6)}`,
+    `${end[0] - arrowSize * Math.cos(angle + Math.PI / 6)},${end[1] - arrowSize * Math.sin(angle + Math.PI / 6)}`,
+  ].join(" ");
+
+  return {
+    path: `M ${start[0]},${start[1]} Q ${controlX},${controlY} ${end[0]},${end[1]}`,
+    arrow,
+  };
 }
 
-function curvedPath(from: [number, number], to: [number, number]): string {
-  const [x1, y1] = project(from);
-  const [x2, y2] = project(to);
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  const ox = -dy / dist;
-  const oy = dx / dist;
-  const bend = Math.min(dist * 0.18, 50);
-  const mx = (x1 + x2) / 2 + ox * bend;
-  const my = (y1 + y2) / 2 + oy * bend;
-  return `M ${x1.toFixed(1)},${y1.toFixed(1)} Q ${mx.toFixed(1)},${my.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}`;
+function formatTradeValue(value: number | null) {
+  return value === null ? "Data unavailable" : `$${value.toFixed(1)}B`;
 }
 
-function FlowArrow({ flow, year, maxVol }: { flow: TradeFlow; year: 2023 | 2024; maxVol: number }) {
-  const vol = year === 2023 ? flow.volume2023 : flow.volume2024;
-  const width = (vol / maxVol) * 7 + 1;
-  const changed = flow.volume2024 < flow.volume2023;
-  const increased = flow.volume2024 > flow.volume2023;
-  const actualColor = year === 2024 && changed ? "#ef4444" : year === 2024 && increased ? "#22c55e" : flow.color;
-  const d = curvedPath(flow.fromCoords, flow.toCoords);
-  const [x2, y2] = project(flow.toCoords);
-  const [xm, ym] = project([
-    (flow.fromCoords[0] + flow.toCoords[0]) / 2,
-    (flow.fromCoords[1] + flow.toCoords[1]) / 2,
-  ]);
-  const angle = Math.atan2(y2 - ym, x2 - xm) * (180 / Math.PI);
-
-  return (
-    <g>
-      <path d={d} fill="none" stroke={actualColor} strokeWidth={width} strokeOpacity={0.7} strokeLinecap="round" />
-      <polygon
-        points={`0,${-width * 0.7} ${width * 1.2},0 0,${width * 0.7}`}
-        fill={actualColor}
-        fillOpacity={0.9}
-        transform={`translate(${x2.toFixed(1)},${y2.toFixed(1)}) rotate(${angle.toFixed(1)})`}
-      />
-    </g>
-  );
+function formatRouteValue(value: number) {
+  return value >= 1_000_000_000
+    ? `$${(value / 1_000_000_000).toFixed(2)}B`
+    : `$${(value / 1_000_000).toFixed(1)}M`;
 }
-
-const COMMODITY_COLORS: Record<string, string> = {
-  Wheat: "#dfa92a",
-  Grain: "#22c55e",
-  "Natural Gas": "#4488ff",
-  "Crude Oil": "#e879f9",
-};
 
 export default function TradeSection() {
-  const [year, setYear] = useState<2023 | 2024>(2023);
   const [selectedConflict, setSelectedConflict] = useState(0);
-  const [tooltip, setTooltip] = useState<{ flow: TradeFlow; x: number; y: number } | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      setYear((y) => (y === 2023 ? 2024 : 2023));
-    }, 5000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, []);
-
-  const activeFlows = tradeFlows.filter((f) => f.conflictRank <= 4);
-  const maxVol = Math.max(...activeFlows.map((f) => Math.max(f.volume2023, f.volume2024)));
-
   const conflict = conflictsByEconomicLoss[selectedConflict];
+  const trade = conflictTradeData.find((entry) => entry.rank === conflict.rank);
+  const tradeRoute = conflictTradeRoutes.find((route) => route.rank === conflict.rank);
+  const routeGeometry = tradeRoute ? getRouteGeometry(tradeRoute) : null;
+  const previousTotal = trade?.before.exports !== null && trade?.before.imports !== null
+    ? trade.before.exports + trade.before.imports
+    : null;
 
   return (
     <section id="trade" style={{ background: "#000000", padding: "80px 0", border: "1px solid #000000", boxShadow: "rgba(0,0,0,0.25) 0px 4px 4px 0px" }}>
@@ -96,31 +77,31 @@ export default function TradeSection() {
           Highlights: Top 10 Conflicts by Economic Loss
         </div>
 
-        {/* Conflict selector */}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 36 }}>
-          {conflictsByEconomicLoss.map((c, i) => (
+          {conflictsByEconomicLoss.map((item, index) => (
             <button
-              key={c.rank}
-              onClick={() => setSelectedConflict(i)}
+              key={item.rank}
+              type="button"
+              onClick={() => setSelectedConflict(index)}
+              aria-pressed={index === selectedConflict}
               style={{
                 padding: "8px 16px",
                 borderRadius: 6,
-                border: `1px solid ${i === selectedConflict ? "#dfa92a" : "#1a2435"}`,
-                background: i === selectedConflict ? "#1a160a" : "transparent",
+                border: `1px solid ${index === selectedConflict ? "#dfa92a" : "#1a2435"}`,
+                background: index === selectedConflict ? "#1a160a" : "transparent",
                 cursor: "pointer",
                 fontFamily: "JetBrains Mono, monospace",
                 fontSize: 12,
-                color: i === selectedConflict ? "#dfa92a" : "#7a8899",
+                color: index === selectedConflict ? "#dfa92a" : "#7a8899",
                 transition: "all 0.2s",
               }}
             >
-              <span style={{ opacity: 0.6 }}>{ordinal(c.rank)} · </span>
-              {c.country}
+              <span style={{ opacity: 0.6 }}>{ordinal(item.rank)} · </span>
+              {item.country}
             </button>
           ))}
         </div>
 
-        {/* Conflict spotlight */}
         <div style={{
           background: "#111922",
           border: "1px solid #1a2435",
@@ -164,50 +145,15 @@ export default function TradeSection() {
           </div>
         </div>
 
-        {/* Map header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 12 }}>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: "#dde4ee" }}>
-              Global Trade Flow: Russia-Ukraine War Impact (2023 vs 2024)
-            </div>
-            <div style={{ fontSize: 12, color: "#7a8899", marginTop: 4 }}>
-              Showing top-4 conflict trade disruptions · auto-switching every 5 seconds · data: 2023 vs 2024
-            </div>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 16, fontWeight: 600, color: "#dde4ee" }}>
+            Trade in {conflict.country}: exports and imports
           </div>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-          }}>
-            <span style={{ fontSize: 12, color: "#7a8899" }}>Viewing year:</span>
-            {[2023, 2024].map((y) => (
-              <button
-                key={y}
-                onClick={() => {
-                  setYear(y as 2023 | 2024);
-                  if (intervalRef.current) clearInterval(intervalRef.current);
-                  intervalRef.current = setInterval(() => setYear((prev) => (prev === 2023 ? 2024 : 2023)), 5000);
-                }}
-                style={{
-                  padding: "6px 18px",
-                  borderRadius: 6,
-                  border: `1px solid ${year === y ? "#dfa92a" : "#1a2435"}`,
-                  background: year === y ? "#1a160a" : "transparent",
-                  color: year === y ? "#dfa92a" : "#7a8899",
-                  fontFamily: "JetBrains Mono, monospace",
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  transition: "all 0.3s",
-                }}
-              >
-                {y}
-              </button>
-            ))}
+          <div style={{ fontSize: 12, color: "#7a8899", marginTop: 4 }}>
+            Conflict onset: {conflict.period} · Values are annual merchandise trade in current US dollars
           </div>
         </div>
 
-        {/* Trade flow map */}
         <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid #1a2435" }}>
           <ComposableMap
             projection="geoNaturalEarth1"
@@ -217,133 +163,87 @@ export default function TradeSection() {
             style={{ width: "100%", height: "auto", display: "block", background: "#070b10" }}
           >
             <Geographies geography={GEO_URL}>
-              {({ geographies }) =>
-                geographies.map((geo) => (
+              {({ geographies }) => geographies.map((geo) => {
+                const isSelected = String(geo.id) === trade?.countryId;
+                return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
-                    fill="#141e2e"
-                    stroke="#0c1420"
-                    strokeWidth={0.4}
+                    fill={isSelected ? "#dfa92a" : "#141e2e"}
+                    stroke={isSelected ? "#fff0b3" : "#0c1420"}
+                    strokeWidth={isSelected ? 1 : 0.4}
                     style={{ default: { outline: "none" }, hover: { outline: "none" }, pressed: { outline: "none" } }}
                   />
-                ))
-              }
-            </Geographies>
-
-            {activeFlows.map((flow) => (
-              <FlowArrow key={flow.id} flow={flow} year={year} maxVol={maxVol} />
-            ))}
-
-            {/* Source markers */}
-            {[
-              { coords: [37.6, 55.8] as [number, number], label: "Russia", color: "#e04040" },
-              { coords: [30.5, 50.5] as [number, number], label: "Ukraine", color: "#4488ff" },
-              { coords: [17.2, 26.3] as [number, number], label: "Libya", color: "#fb923c" },
-              { coords: [-66.6, 6.4] as [number, number], label: "Venezuela", color: "#fb923c" },
-            ].map((s) => (
-              <Marker key={s.label} coordinates={s.coords}>
-                <circle r={5} fill={s.color} stroke="#070b10" strokeWidth={1.5} />
-                <text y={-10} textAnchor="middle" style={{ fontSize: 7, fill: s.color, fontFamily: "JetBrains Mono, monospace", fontWeight: "bold" }}>
-                  {s.label}
-                </text>
-              </Marker>
-            ))}
-          </ComposableMap>
-
-          {/* Year label overlay */}
-          <div style={{
-            position: "absolute",
-            top: 16,
-            left: 16,
-            fontFamily: "JetBrains Mono, monospace",
-            fontWeight: "bold",
-            fontSize: 42,
-            color: "#dfa92a",
-            opacity: 0.15,
-            pointerEvents: "none",
-            userSelect: "none",
-          }}>
-            {year}
-          </div>
-
-          {/* Legend */}
-          <div style={{
-            position: "absolute",
-            bottom: 12,
-            left: 12,
-            background: "rgba(7,11,16,0.85)",
-            border: "1px solid #1a2435",
-            borderRadius: 6,
-            padding: "10px 14px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 6,
-          }}>
-            {Object.entries(COMMODITY_COLORS).map(([c, col]) => (
-              <div key={c} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 24, height: 3, background: col, borderRadius: 2 }} />
-                <span style={{ fontSize: 11, color: "#b0b8c8", fontFamily: "JetBrains Mono, monospace" }}>{c}</span>
-              </div>
-            ))}
-            <div style={{ borderTop: "1px solid #1a2435", paddingTop: 6, marginTop: 2 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 24, height: 3, background: "#ef4444", borderRadius: 2 }} />
-                <span style={{ fontSize: 11, color: "#7a8899", fontFamily: "JetBrains Mono, monospace" }}>Decreased 2024</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                <div style={{ width: 24, height: 3, background: "#22c55e", borderRadius: 2 }} />
-                <span style={{ fontSize: 11, color: "#7a8899", fontFamily: "JetBrains Mono, monospace" }}>Increased 2024</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Flow table */}
-        <div style={{ marginTop: 24, overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-            <thead>
-              <tr style={{ borderBottom: "1px solid #1a2435" }}>
-                {["Flow", "Commodity", "2023", "2024", "Change"].map((h) => (
-                  <th key={h} style={{ padding: "8px 12px", textAlign: "left", color: "#7a8899", fontWeight: 500, fontFamily: "JetBrains Mono, monospace", fontSize: 11, letterSpacing: 1 }}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {activeFlows.map((f) => {
-                const pct = ((f.volume2024 - f.volume2023) / f.volume2023 * 100).toFixed(1);
-                const up = f.volume2024 > f.volume2023;
-                return (
-                  <tr key={f.id} style={{ borderBottom: "1px solid #0f1824" }}>
-                    <td style={{ padding: "10px 12px", color: "#dde4ee" }}>
-                      {f.fromLabel} → {f.toLabel}
-                    </td>
-                    <td style={{ padding: "10px 12px" }}>
-                      <span style={{ color: COMMODITY_COLORS[f.commodity] ?? "#7a8899", fontFamily: "JetBrains Mono, monospace", fontSize: 12 }}>
-                        {f.commodity}
-                      </span>
-                    </td>
-                    <td style={{ padding: "10px 12px", fontFamily: "JetBrains Mono, monospace", color: "#b0b8c8" }}>
-                      {f.volume2023} {f.unit}
-                    </td>
-                    <td style={{ padding: "10px 12px", fontFamily: "JetBrains Mono, monospace", color: up ? "#22c55e" : "#ef4444" }}>
-                      {f.volume2024} {f.unit}
-                    </td>
-                    <td style={{ padding: "10px 12px", fontFamily: "JetBrains Mono, monospace", color: up ? "#22c55e" : "#ef4444", fontWeight: "bold" }}>
-                      {up ? "+" : ""}{pct}%
-                    </td>
-                  </tr>
                 );
               })}
-            </tbody>
-          </table>
+            </Geographies>
+            {routeGeometry && tradeRoute && (
+              <g>
+                <path d={routeGeometry.path} fill="none" stroke="#f0c75e" strokeWidth={3} strokeOpacity={0.95} strokeLinecap="round" />
+                <polygon points={routeGeometry.arrow} fill="#f0c75e" />
+              </g>
+            )}
+            <Marker coordinates={[conflict.lon, conflict.lat]}>
+              <circle r={6} fill="#fff0b3" stroke="#070b10" strokeWidth={1.5} />
+            </Marker>
+            {tradeRoute && (
+              <>
+                <Marker coordinates={tradeRoute.originCoords}>
+                  <circle r={5} fill="#f0c75e" stroke="#070b10" strokeWidth={1.5} />
+                  <text y={-9} textAnchor="middle" style={{ fontSize: 8, fill: "#fff0b3", fontFamily: "JetBrains Mono, monospace", fontWeight: "bold" }}>{tradeRoute.origin}</text>
+                </Marker>
+                <Marker coordinates={tradeRoute.destinationCoords}>
+                  <circle r={5} fill="#f0c75e" stroke="#070b10" strokeWidth={1.5} />
+                  <text y={-9} textAnchor="middle" style={{ fontSize: 8, fill: "#fff0b3", fontFamily: "JetBrains Mono, monospace", fontWeight: "bold" }}>{tradeRoute.destination}</text>
+                </Marker>
+              </>
+            )}
+          </ComposableMap>
+          <div style={{ position: "absolute", left: 16, top: 16, display: "flex", alignItems: "center", gap: 8, background: "rgba(7,11,16,0.88)", border: "1px solid #1a2435", borderRadius: 6, padding: "8px 12px" }}>
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#dfa92a" }} />
+            <span style={{ fontSize: 12, color: "#dde4ee" }}>{conflict.country}</span>
+          </div>
+          {tradeRoute && (
+            <div style={{ position: "absolute", right: 16, top: 16, maxWidth: "min(360px, 58%)", background: "rgba(7,11,16,0.9)", border: "1px solid #76612e", borderRadius: 6, padding: "10px 12px" }}>
+              <div style={{ color: "#f0c75e", fontSize: 11, fontFamily: "JetBrains Mono, monospace", marginBottom: 5 }}>{tradeRoute.commodity}</div>
+              <div style={{ color: "#dde4ee", fontSize: 12 }}>{tradeRoute.origin} → {tradeRoute.destination}</div>
+              <div style={{ color: "#b0b8c8", fontSize: 11, marginTop: 5 }}>
+                {tradeRoute.beforeYear} {formatRouteValue(tradeRoute.beforeValueUsd)} → {tradeRoute.afterYear} {formatRouteValue(tradeRoute.afterValueUsd)}
+              </div>
+            </div>
+          )}
         </div>
 
-        <div style={{ marginTop: 16, fontSize: 12, color: "#4a5568" }}>
-          Sources: UCDP Dyadic Conflict Dataset v26.1; UN Comtrade; IEA Energy Statistics; USDA WASDE Report 2023.
-          Line thickness proportional to trade volume.
+        <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12 }}>
+          {TRADE_SNAPSHOTS.map((snapshotKey: SnapshotKey) => {
+            const snapshot = trade?.[snapshotKey];
+            const total = snapshot?.exports !== null && snapshot?.imports !== null && snapshot
+              ? snapshot.exports + snapshot.imports
+              : null;
+            const change = total !== null && previousTotal !== null && snapshotKey !== "before"
+              ? ((total - previousTotal) / previousTotal) * 100
+              : null;
+            return (
+              <div key={snapshotKey} style={{ background: "#111922", border: "1px solid #1a2435", borderRadius: 8, padding: "16px 18px" }}>
+                <div style={{ fontSize: 11, color: "#dfa92a", fontFamily: "JetBrains Mono, monospace", letterSpacing: 1, marginBottom: 12 }}>
+                  {SNAPSHOT_LABELS[snapshotKey]}
+                </div>
+                <div style={{ fontSize: 22, color: "#dde4ee", fontFamily: "JetBrains Mono, monospace", fontWeight: 600, marginBottom: 12 }}>
+                  {snapshot?.year ?? "Year unavailable"}
+                </div>
+                <div style={{ display: "grid", gap: 7, fontSize: 12, color: "#7a8899" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><span>Exports</span><span style={{ color: "#b0b8c8" }}>{formatTradeValue(snapshot?.exports ?? null)}</span></div>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><span>Imports</span><span style={{ color: "#b0b8c8" }}>{formatTradeValue(snapshot?.imports ?? null)}</span></div>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 8, borderTop: "1px solid #1a2435", paddingTop: 7, marginTop: 2 }}><span>Total trade</span><span style={{ color: "#dde4ee", fontWeight: 600 }}>{formatTradeValue(total)}</span></div>
+                  {change !== null && <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><span>Change vs. pre-conflict</span><span style={{ color: change < 0 ? "#ef7777" : "#6de5a8" }}>{change > 0 ? "+" : ""}{change.toFixed(1)}%</span></div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ marginTop: 16, fontSize: 12, color: "#7a8899", lineHeight: 1.7 }}>
+          Source: World Bank merchandise exports and imports (current US$), indicators TX.VAL.MRCH.CD.WT and TM.VAL.MRCH.CD.WT. Route overlays show bilateral commodity trade from UN Comtrade annual HS records for the year before conflict onset and the first full year after it began. These are observed trade changes, not proof that the conflict caused them. “Latest available” uses the latest year with both World Bank series; missing values are shown as unavailable.
         </div>
       </div>
     </section>
