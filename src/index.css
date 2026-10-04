@@ -17,6 +17,27 @@
 
 html { scroll-behavior: smooth; }
 
+.platform-source-link {
+  color: #dfa92a;
+  transition: color 140ms ease;
+}
+
+.platform-source-link:hover,
+.platform-source-link:focus-visible {
+  color: #fff;
+}
+
+.map-legend-option .map-legend-label {
+  color: #7a8899;
+  transition: color 140ms ease;
+}
+
+.map-legend-option:hover .map-legend-label,
+.map-legend-option:focus-visible .map-legend-label,
+.map-legend-option[aria-pressed="true"] .map-legend-label {
+  color: #fff;
+}
+
 body {
   background-color: #070b10;
   color: #dde4ee;

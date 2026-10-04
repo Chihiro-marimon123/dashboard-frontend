@@ -25,6 +25,7 @@ interface WorldChoroplethProps {
   tradeRoutes?: ConflictTradeRoute[];
   children?: React.ReactNode;
   highlightedCountryId?: string | null;
+  countryFilter?: (id: string) => boolean;
 }
 
 const routeProjection = geoNaturalEarth1().scale(155).translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
@@ -49,7 +50,7 @@ function routePath(route: ConflictTradeRoute) {
   return { d: `M ${start[0]},${start[1]} Q ${controlX},${controlY} ${end[0]},${end[1]}`, arrow };
 }
 
-export default function WorldChoropleth({ colorFn, tooltipFn, markers, tradeRoutes, children, highlightedCountryId }: WorldChoroplethProps) {
+export default function WorldChoropleth({ colorFn, tooltipFn, markers, tradeRoutes, children, highlightedCountryId, countryFilter }: WorldChoroplethProps) {
   const [tooltip, setTooltip] = useState<{ content: TooltipContent; x: number; y: number } | null>(null);
 
   return (
@@ -66,13 +67,14 @@ export default function WorldChoropleth({ colorFn, tooltipFn, markers, tradeRout
             geographies.map((geo) => {
               const id = String(geo.id);
               const isHighlighted = highlightedCountryId !== null && highlightedCountryId !== undefined && id === highlightedCountryId;
+              const isFilteredOut = countryFilter !== undefined && !countryFilter(id);
               return (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill={isHighlighted ? "#f6d365" : colorFn(id)}
-                  stroke={isHighlighted ? "#ffffff" : "#0c1420"}
-                  strokeWidth={isHighlighted ? 1.2 : 0.4}
+                  fill={isFilteredOut ? "#101721" : isHighlighted ? "#f6d365" : colorFn(id)}
+                  stroke={isHighlighted && !isFilteredOut ? "#ffffff" : "#0c1420"}
+                  strokeWidth={isHighlighted && !isFilteredOut ? 1.2 : 0.4}
                   onMouseEnter={(evt: React.MouseEvent) => {
                     const info = tooltipFn(id);
                     if (info) setTooltip({ content: info, x: evt.clientX, y: evt.clientY });
@@ -155,11 +157,10 @@ export function stabilityColor(v: number | undefined): string {
   if (v === undefined) return "#1a2435";
   if (v < -2) return "#7b1a1a";
   if (v < -1.5) return "#d94d2b";
-  if (v < -1) return "#e77d3a";
-  if (v < -0.5) return "#e9a13b";
-  if (v < 0) return "#e8d76d";
-  if (v < 0.5) return "#a8d76b";
-  if (v < 1) return "#5ebd7a";
+  if (v < -1) return "#e9a13b";
+  if (v < -0.5) return "#e8d76d";
+  if (v < 0) return "#a8d76b";
+  if (v < 0.5) return "#5ebd7a";
   if (v < 1.5) return "#2b9b5d";
   return "#0e6647";
 }

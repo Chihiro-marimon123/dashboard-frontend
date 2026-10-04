@@ -545,37 +545,15 @@ function About() {
                 borderRadius: 8,
                 padding: "14px 16px",
               }}>
-                <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 12, color: "#dfa92a", marginBottom: 4 }}>
+                <a className="platform-source-link" href={s.url} target="_blank" rel="noreferrer" style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 12, marginBottom: 4, textDecoration: "none", display: "inline-block" }}>
                   {s.source}
-                </div>
-                <div style={{ fontSize: 13, color: "#7a8899" }}>{s.label}</div>
-                <a href={s.url} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#8fb3ff", textDecoration: "none", display: "inline-block", marginTop: 8 }}>
-                  {s.url}
                 </a>
+                <div style={{ fontSize: 13, color: "#7a8899" }}>{s.label}</div>
               </div>
             ))}
           </div>
         </div>
 
-        <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid #1a2435" }}>
-          <div style={{ marginBottom: 12, fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: "#dfa92a", letterSpacing: 2 }}>
-            REFERENCE DATASETS
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-            <a href="https://ucdp.uu.se/" target="_blank" rel="noreferrer" style={{ color: "#dde4ee", textDecoration: "none", border: "1px solid #243447", borderRadius: 999, padding: "8px 12px", background: "rgba(255,255,255,0.02)" }}>
-              UCDP Georeferenced Event Dataset (GED)
-            </a>
-            <a href="https://www.worldbank.org/en/publication/worldwide-governance-indicators" target="_blank" rel="noreferrer" style={{ color: "#dde4ee", textDecoration: "none", border: "1px solid #243447", borderRadius: 999, padding: "8px 12px", background: "rgba(255,255,255,0.02)" }}>
-              World Bank Worldwide Governance Indicators
-            </a>
-            <a href="https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG" target="_blank" rel="noreferrer" style={{ color: "#dde4ee", textDecoration: "none", border: "1px solid #243447", borderRadius: 999, padding: "8px 12px", background: "rgba(255,255,255,0.02)" }}>
-              World Bank GDP Growth Data
-            </a>
-            <a href="https://comtradeplus.un.org/" target="_blank" rel="noreferrer" style={{ color: "#dde4ee", textDecoration: "none", border: "1px solid #243447", borderRadius: 999, padding: "8px 12px", background: "rgba(255,255,255,0.02)" }}>
-              UN Comtrade
-            </a>
-          </div>
-        </div>
       </div>
     </section>
   );
