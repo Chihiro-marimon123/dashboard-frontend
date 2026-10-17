@@ -183,9 +183,6 @@ export default function TradeSection() {
                 <polygon points={routeGeometry.arrow} fill="#f0c75e" />
               </g>
             )}
-            <Marker coordinates={[conflict.lon, conflict.lat]}>
-              <circle r={6} fill="#fff0b3" stroke="#070b10" strokeWidth={1.5} />
-            </Marker>
             {tradeRoute && (
               <>
                 <Marker coordinates={tradeRoute.originCoords}>
@@ -200,7 +197,7 @@ export default function TradeSection() {
             )}
           </ComposableMap>
           <div style={{ position: "absolute", left: 16, top: 16, display: "flex", alignItems: "center", gap: 8, background: "rgba(7,11,16,0.88)", border: "1px solid #1a2435", borderRadius: 6, padding: "8px 12px" }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#dfa92a" }} />
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: "#dfa92a" }} />
             <span style={{ fontSize: 12, color: "#dde4ee" }}>{conflict.country}</span>
           </div>
           {tradeRoute && (

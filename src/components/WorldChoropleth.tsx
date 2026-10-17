@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { geoNaturalEarth1 } from "d3-geo";
 import type { ConflictTradeRoute } from "../data";
@@ -26,6 +26,7 @@ interface WorldChoroplethProps {
   children?: React.ReactNode;
   highlightedCountryId?: string | null;
   countryFilter?: (id: string) => boolean;
+  enableFullscreen?: boolean;
 }
 
 const routeProjection = geoNaturalEarth1().scale(155).translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
@@ -50,18 +51,87 @@ function routePath(route: ConflictTradeRoute) {
   return { d: `M ${start[0]},${start[1]} Q ${controlX},${controlY} ${end[0]},${end[1]}`, arrow };
 }
 
-export default function WorldChoropleth({ colorFn, tooltipFn, markers, tradeRoutes, children, highlightedCountryId, countryFilter }: WorldChoroplethProps) {
+export default function WorldChoropleth({ colorFn, tooltipFn, markers, tradeRoutes, children, highlightedCountryId, countryFilter, enableFullscreen = false }: WorldChoroplethProps) {
   const [tooltip, setTooltip] = useState<{ content: TooltipContent; x: number; y: number } | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsFullscreen(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isFullscreen]);
 
   return (
-    <div className="relative" style={{ background: "#070b10", borderRadius: 8, overflow: "hidden" }}>
+    <div
+      className={`relative world-choropleth${isFullscreen ? " world-choropleth-fullscreen" : ""}`}
+      onClick={enableFullscreen && !isFullscreen ? () => setIsFullscreen(true) : undefined}
+      style={{
+        background: "#070b10",
+        borderRadius: isFullscreen ? 0 : 8,
+        overflow: "hidden",
+        cursor: enableFullscreen && !isFullscreen ? "zoom-in" : "default",
+        ...(isFullscreen ? {
+          position: "fixed" as const,
+          inset: 0,
+          zIndex: 1000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "48px 24px 24px",
+        } : {}),
+      }}
+    >
+      {enableFullscreen && !isFullscreen && (
+        <button
+          type="button"
+          className="world-choropleth-expand"
+          aria-label="Open map in fullscreen"
+          title="Open map in fullscreen"
+          onClick={(event) => {
+            event.stopPropagation();
+            setIsFullscreen(true);
+          }}
+        >
+          ⛶
+        </button>
+      )}
+      {isFullscreen && (
+        <button
+          type="button"
+          className="world-choropleth-close"
+          onClick={() => setIsFullscreen(false)}
+        >
+          Close map
+        </button>
+      )}
       <ComposableMap
         projection="geoNaturalEarth1"
         projectionConfig={{ scale: 155 }}
         width={MAP_WIDTH}
         height={MAP_HEIGHT}
-        style={{ width: "100%", height: "auto", display: "block" }}
+        style={{ width: "100%", height: "auto", display: "block", cursor: enableFullscreen && !isFullscreen ? "zoom-in" : "default" }}
       >
+        <defs>
+          <filter id="country-highlight-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="expanded" />
+            <feComposite in="expanded" in2="SourceAlpha" operator="out" result="outline" />
+            <feGaussianBlur in="outline" stdDeviation="2.5" result="blurred-outline" />
+            <feFlood floodColor="#f6d365" floodOpacity="0.9" result="glow-color" />
+            <feComposite in="glow-color" in2="blurred-outline" operator="in" result="glow" />
+            <feMerge>
+              <feMergeNode in="glow" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
         <Geographies geography={GEO_URL}>
           {({ geographies }) =>
             geographies.map((geo) => {
@@ -72,9 +142,9 @@ export default function WorldChoropleth({ colorFn, tooltipFn, markers, tradeRout
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill={isFilteredOut ? "#101721" : isHighlighted ? "#f6d365" : colorFn(id)}
-                  stroke={isHighlighted && !isFilteredOut ? "#ffffff" : "#0c1420"}
-                  strokeWidth={isHighlighted && !isFilteredOut ? 1.2 : 0.4}
+                  fill={isFilteredOut ? "#101721" : colorFn(id)}
+                  stroke={isHighlighted ? "#f6d365" : "#0c1420"}
+                  strokeWidth={isHighlighted ? 1.2 : 0.4}
                   onMouseEnter={(evt: React.MouseEvent) => {
                     const info = tooltipFn(id);
                     if (info) setTooltip({ content: info, x: evt.clientX, y: evt.clientY });
@@ -84,7 +154,7 @@ export default function WorldChoropleth({ colorFn, tooltipFn, markers, tradeRout
                   }}
                   onMouseLeave={() => setTooltip(null)}
                   style={{
-                    default: { outline: "none" },
+                    default: { outline: "none", filter: isHighlighted ? "url(#country-highlight-glow)" : undefined },
                     hover: { outline: "none", opacity: isHighlighted ? 1 : 0.75 },
                     pressed: { outline: "none" },
                   }}

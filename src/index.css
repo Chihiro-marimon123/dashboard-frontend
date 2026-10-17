@@ -38,6 +38,137 @@ html { scroll-behavior: smooth; }
   color: #fff;
 }
 
+.stability-map-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  align-items: start;
+  gap: 20px;
+}
+
+.stability-map-layout > .relative {
+  min-width: 0;
+}
+
+.stability-map-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 0;
+  padding: 14px 0 14px 16px;
+  border-left: 1px solid #1a2435;
+}
+
+.world-choropleth-expand,
+.world-choropleth-close {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+  border: 1px solid #3b536e;
+  border-radius: 6px;
+  background: rgba(7, 11, 16, 0.9);
+  color: #dde4ee;
+  cursor: pointer;
+}
+
+.world-choropleth-expand {
+  width: 34px;
+  height: 34px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.world-choropleth-close {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  padding: 9px 13px;
+  font-size: 13px;
+}
+
+.world-choropleth-fullscreen > svg {
+  width: auto !important;
+  height: 88vh !important;
+  max-width: 96vw;
+}
+
+.relationship-diagram-layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: start;
+  gap: 24px;
+}
+
+.relationship-figure {
+  min-width: 0;
+}
+
+.relationship-figure > svg {
+  width: 100%;
+}
+
+.relationship-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12px 0 12px 16px;
+  border-left: 1px solid #1a2435;
+}
+
+.relationship-diagram-expand,
+.relationship-diagram-close {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+  border: 1px solid #3b536e;
+  border-radius: 6px;
+  background: rgba(7, 11, 16, 0.9);
+  color: #dde4ee;
+  cursor: pointer;
+}
+
+.relationship-diagram-expand {
+  width: 34px;
+  height: 34px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.relationship-diagram-close {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  padding: 9px 13px;
+  font-size: 13px;
+}
+
+.relationship-diagram-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: center;
+  gap: 24px;
+  padding: 56px 24px 24px;
+  box-sizing: border-box;
+  background: #070b10;
+  overflow: auto;
+}
+
+.relationship-diagram-fullscreen .relationship-figure > svg {
+  width: auto !important;
+  height: 86vh !important;
+  max-width: calc(100vw - 360px);
+  margin: 0 auto;
+}
+
+.relationship-diagram-fullscreen .relationship-legend {
+  max-height: 86vh;
+  overflow-y: auto;
+}
+
 body {
   background-color: #070b10;
   color: #dde4ee;
@@ -48,3 +179,50 @@ body {
 ::-webkit-scrollbar-track { background: #0c1118; }
 ::-webkit-scrollbar-thumb { background: #1a2435; border-radius: 2px; }
 * { scrollbar-width: thin; scrollbar-color: #1a2435 #0c1118; }
+
+@media (max-width: 760px) {
+  .stability-map-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .stability-map-legend {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+    padding: 14px 0 0;
+    border-left: 0;
+    border-top: 1px solid #1a2435;
+  }
+
+  .relationship-diagram-layout,
+  .relationship-diagram-fullscreen {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .relationship-legend {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 14px 0 0;
+    border-left: 0;
+    border-top: 1px solid #1a2435;
+  }
+
+  .relationship-diagram-fullscreen {
+    align-content: start;
+    padding: 56px 16px 20px;
+  }
+
+  .relationship-diagram-fullscreen .relationship-figure > svg {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+    max-height: 62vh;
+  }
+
+  .relationship-diagram-fullscreen .relationship-legend {
+    max-height: none;
+    overflow: visible;
+  }
+}

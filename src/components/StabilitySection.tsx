@@ -29,7 +29,7 @@ function MapLegend({ items, selectedKey, onSelect }: {
   onSelect: (key: string) => void;
 }) {
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginTop: 12 }}>
+    <div className="stability-map-legend">
       {items.map((item) => {
         const selected = selectedKey === item.key;
         return (
@@ -101,6 +101,17 @@ function InstabilityIndex({ highlightedCountryId, onSelectCountry }: {
   highlightedCountryId: string | null;
   onSelectCountry: (countryId: string | null) => void;
 }) {
+  const [expandedCountries, setExpandedCountries] = useState<Set<string>>(() => new Set());
+
+  const toggleCountry = (country: string) => {
+    setExpandedCountries((current) => {
+      const next = new Set(current);
+      if (next.has(country)) next.delete(country);
+      else next.add(country);
+      return next;
+    });
+  };
+
   return (
     <div style={{ marginTop: 48, borderTop: "1px solid #1a2435", paddingTop: 36 }}>
       <h3 style={{ fontFamily: "Fraunces, serif", fontSize: 26, fontWeight: 600, color: "#dde4ee", marginBottom: 8 }}>
@@ -109,10 +120,12 @@ function InstabilityIndex({ highlightedCountryId, onSelectCountry }: {
       <p style={{ fontSize: 13, color: "#7a8899", marginBottom: 28, maxWidth: 640, lineHeight: 1.7 }}>
         Countries with the lowest WGI Political Stability scores. Each entry below includes a concise summary of the conflict, governance crisis, and broader context behind the rating.
       </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      <div style={{ maxHeight: 480, overflowY: "auto", overscrollBehaviorY: "contain", paddingRight: 6 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
         {unstableCountriesIndex.map((entry, i) => {
           const accent = stabilityColor(entry.score);
           const summary = summarizeDetail(entry.detail);
+          const isExpanded = expandedCountries.has(entry.country);
 
           return (
             <div
@@ -171,33 +184,49 @@ function InstabilityIndex({ highlightedCountryId, onSelectCountry }: {
                     {entry.score.toFixed(2)}
                   </span>
                 </div>
+                <button
+                  type="button"
+                  aria-expanded={isExpanded}
+                  onClick={() => toggleCountry(entry.country)}
+                  style={{
+                    flexShrink: 0,
+                    border: "1px solid #3b536e",
+                    borderRadius: 6,
+                    padding: "7px 11px",
+                    background: isExpanded ? "#1a2435" : "transparent",
+                    color: "#dde4ee",
+                    cursor: "pointer",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    fontFamily: "Inter, sans-serif",
+                  }}
+                >
+                  {isExpanded ? "Close" : "Explore"}
+                </button>
               </div>
 
-              <div style={{
-                padding: "0 20px 20px 73px",
-              }}>
-                <div style={{
-                  fontSize: 13,
-                  color: "#b0b8c8",
-                  lineHeight: 1.85,
-                  borderTop: "1px solid #1a2435",
-                  paddingTop: 18,
-                }}>
-                  {summary}
-                </div>
-                <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8 }}>
+              {isExpanded && (
+                <div style={{ padding: "0 20px 20px 73px" }}>
                   <div style={{
-                    fontSize: 11,
-                    fontFamily: "JetBrains Mono, monospace",
-                    color: "#4a5568",
+                    fontSize: 13,
+                    color: "#b0b8c8",
+                    lineHeight: 1.85,
+                    borderTop: "1px solid #1a2435",
+                    paddingTop: 18,
                   }}>
-                    WGI Political Stability 2023: {entry.score.toFixed(2)} (global range: -2.85 to +2.0)
+                    {summary}
+                  </div>
+                  <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ fontSize: 11, fontFamily: "JetBrains Mono, monospace", color: "#4a5568" }}>
+                      WGI Political Stability 2023: {entry.score.toFixed(2)} (global range: -2.85 to +2.0)
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           );
         })}
+        </div>
       </div>
       <div style={{ marginTop: 16, fontSize: 12, color: "#4a5568" }}>
         Source: World Bank WGI 2023 release. Scores represent governance estimates; lower scores indicate higher perceived risk of political violence, terrorism, or unconstitutional regime change.
@@ -272,21 +301,24 @@ export default function StabilitySection() {
             <div style={{ fontSize: 14, color: "#b0b8c8", marginBottom: 16, lineHeight: 1.7, maxWidth: 700 }}>
               <strong style={{ color: "#dde4ee" }}>WGI Political Stability Estimate (2023)</strong> measures the likelihood that a government will be destabilized by unconstitutional or violent means. Positive scores indicate greater stability; negative scores indicate elevated risk of political violence, terrorism, or government overthrow.
             </div>
-            <WorldChoropleth
-              colorFn={(id) => stabilityColor(politicalStabilityData[id])}
-              countryFilter={STABILITY_LEGEND.find((item) => item.key === selectedLegendByMap.A)?.matches}
-              tooltipFn={(id) => {
-                const name = countryNames[id];
-                const v = politicalStabilityData[id];
-                if (!name) return null;
-                return {
-                  name,
-                  value: v !== undefined ? `WGI Score: ${v > 0 ? "+" : ""}${v.toFixed(2)}` : "No data",
-                };
-              }}
-              highlightedCountryId={highlightedCountryId}
-            />
-            <MapLegend items={STABILITY_LEGEND} selectedKey={selectedLegendByMap.A} onSelect={(key) => handleLegendSelect("A", key)} />
+            <div className="stability-map-layout">
+              <WorldChoropleth
+                colorFn={(id) => stabilityColor(politicalStabilityData[id])}
+                countryFilter={STABILITY_LEGEND.find((item) => item.key === selectedLegendByMap.A)?.matches}
+                tooltipFn={(id) => {
+                  const name = countryNames[id];
+                  const v = politicalStabilityData[id];
+                  if (!name) return null;
+                  return {
+                    name,
+                    value: v !== undefined ? `WGI Score: ${v > 0 ? "+" : ""}${v.toFixed(2)}` : "No data",
+                  };
+                }}
+                highlightedCountryId={highlightedCountryId}
+                enableFullscreen
+              />
+              <MapLegend items={STABILITY_LEGEND} selectedKey={selectedLegendByMap.A} onSelect={(key) => handleLegendSelect("A", key)} />
+            </div>
           </div>
         )}
 
@@ -296,46 +328,25 @@ export default function StabilitySection() {
             <div style={{ fontSize: 14, color: "#b0b8c8", marginBottom: 16, lineHeight: 1.7, maxWidth: 700 }}>
               <strong style={{ color: "#dde4ee" }}>Annual GDP Growth Rate 2024 (World Bank)</strong> illustrates economic performance against the backdrop of active conflicts. Gold markers indicate the top 10 highest-death conflicts. Note the severe contraction in Ukraine (-29.1% in 2022) and Sudan (-20.3% in 2024) and persistent stagnation in conflict-affected states.
             </div>
-            <WorldChoropleth
-              colorFn={(id) => gdpColor(gdpGrowthData[id])}
-              countryFilter={GDP_LEGEND.find((item) => item.key === selectedLegendByMap.B)?.matches}
-              tooltipFn={(id) => {
-                const name = countryNames[id];
-                const v = gdpGrowthData[id];
-                if (!name) return null;
-                return {
-                  name,
-                  value: v !== undefined ? `GDP Growth 2024: ${v > 0 ? "+" : ""}${v.toFixed(1)}%` : "No data",
-                };
-              }}
-              markers={deathMarkers}
-              tradeRoutes={nonUkraineTradeRoutes}
-              highlightedCountryId={highlightedCountryId}
-            />
-            <MapLegend items={GDP_LEGEND} selectedKey={selectedLegendByMap.B} onSelect={(key) => handleLegendSelect("B", key)} />
-            <div style={{ marginTop: 20, borderTop: "1px solid #1a2435", paddingTop: 16 }}>
-              <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: "#dde4ee", letterSpacing: 1, marginBottom: 10 }}>
-                VERIFIED BILATERAL TRADE CHANGES · NON-UKRAINE CONFLICTS
-              </div>
-              <div style={{ display: "grid", gap: 8 }}>
-                {nonUkraineTradeRoutes.map((route) => {
-                  const change = ((route.afterValueUsd - route.beforeValueUsd) / route.beforeValueUsd) * 100;
-                  const color = change >= 0 ? "#22c55e" : "#ef4444";
-                  return (
-                    <div key={`${route.rank}-${route.hsCode}-${route.origin}-${route.destination}`} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr) auto", alignItems: "center", gap: 12, padding: "9px 0", borderBottom: "1px solid #1a2435", fontSize: 12 }}>
-                      <span style={{ color: "#dde4ee" }}>{route.origin} → {route.destination}</span>
-                      <span style={{ color: "#7a8899" }}>{route.commodity} (HS {route.hsCode})</span>
-                      <span style={{ color, fontFamily: "JetBrains Mono, monospace", textAlign: "right" }}>{change > 0 ? "+" : ""}{change.toFixed(1)}%</span>
-                      <span style={{ gridColumn: "1 / -1", color: "#4a5568" }}>
-                        {route.beforeYear} {formatRouteTradeValue(route.beforeValueUsd)} → {route.afterYear} {formatRouteTradeValue(route.afterValueUsd)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ marginTop: 10, fontSize: 11, color: "#4a5568" }}>
-                Green routes increased; red routes decreased. Values are reported bilateral trade values, not proof that conflict caused the change.
-              </div>
+            <div className="stability-map-layout">
+              <WorldChoropleth
+                colorFn={(id) => gdpColor(gdpGrowthData[id])}
+                countryFilter={GDP_LEGEND.find((item) => item.key === selectedLegendByMap.B)?.matches}
+                tooltipFn={(id) => {
+                  const name = countryNames[id];
+                  const v = gdpGrowthData[id];
+                  if (!name) return null;
+                  return {
+                    name,
+                    value: v !== undefined ? `GDP Growth 2024: ${v > 0 ? "+" : ""}${v.toFixed(1)}%` : "No data",
+                  };
+                }}
+                markers={deathMarkers}
+                tradeRoutes={nonUkraineTradeRoutes}
+                highlightedCountryId={highlightedCountryId}
+                enableFullscreen
+              />
+              <MapLegend items={GDP_LEGEND} selectedKey={selectedLegendByMap.B} onSelect={(key) => handleLegendSelect("B", key)} />
             </div>
             <div style={{ marginTop: 20, padding: "18px 20px", background: "#111922", border: "1px solid #1a2435", borderLeft: "3px solid #dfa92a", borderRadius: 8 }}>
               <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: "#dfa92a", letterSpacing: 1, marginBottom: 8 }}>
@@ -361,6 +372,30 @@ export default function StabilitySection() {
                 Source: World Bank GDP growth (annual %), indicator NY.GDP.MKTP.KD.ZG. Pre-war figure is the 2019–2021 arithmetic mean.
               </div>
             </div>
+            <div style={{ marginTop: 20, borderTop: "1px solid #1a2435", paddingTop: 16 }}>
+              <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: "#dde4ee", letterSpacing: 1, marginBottom: 10 }}>
+                VERIFIED BILATERAL TRADE CHANGES · NON-UKRAINE CONFLICTS
+              </div>
+              <div style={{ display: "grid", gap: 8, maxHeight: 320, overflowY: "auto", overscrollBehaviorY: "contain", paddingRight: 6 }}>
+                {nonUkraineTradeRoutes.map((route) => {
+                  const change = ((route.afterValueUsd - route.beforeValueUsd) / route.beforeValueUsd) * 100;
+                  const color = change >= 0 ? "#22c55e" : "#ef4444";
+                  return (
+                    <div key={`${route.rank}-${route.hsCode}-${route.origin}-${route.destination}`} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr) auto", alignItems: "center", gap: 12, padding: "9px 0", borderBottom: "1px solid #1a2435", fontSize: 12 }}>
+                      <span style={{ color: "#dde4ee" }}>{route.origin} → {route.destination}</span>
+                      <span style={{ color: "#7a8899" }}>{route.commodity} (HS {route.hsCode})</span>
+                      <span style={{ color, fontFamily: "JetBrains Mono, monospace", textAlign: "right" }}>{change > 0 ? "+" : ""}{change.toFixed(1)}%</span>
+                      <span style={{ gridColumn: "1 / -1", color: "#4a5568" }}>
+                        {route.beforeYear} {formatRouteTradeValue(route.beforeValueUsd)} → {route.afterYear} {formatRouteTradeValue(route.afterValueUsd)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ marginTop: 10, fontSize: 11, color: "#4a5568" }}>
+                Green routes increased; red routes decreased. Values are reported bilateral trade values, not proof that conflict caused the change.
+              </div>
+            </div>
             <div style={{ marginTop: 10, fontSize: 12, color: "#4a5568", display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 10, height: 10, background: "#dfa92a", borderRadius: "50%" }} />
               Gold markers = top-10 conflict locations by battle deaths (hover over the map countries for GDP data)
@@ -374,32 +409,35 @@ export default function StabilitySection() {
             <div style={{ fontSize: 14, color: "#b0b8c8", marginBottom: 16, lineHeight: 1.7, maxWidth: 700 }}>
               <strong style={{ color: "#dde4ee" }}>Country Classification Matrix</strong> groups countries by stability and growth. High stability is defined as WGI ≥ 0, and high growth as GDP growth ≥ 2%. This makes it easier to see which countries are strong, fragile, or under pressure.
             </div>
-            <WorldChoropleth
-              colorFn={(id) => {
-                const s = politicalStabilityData[id];
-                const g = gdpGrowthData[id];
-                if (s === undefined && g === undefined) return "#1a2435";
-                const q = getQuadrant(s, g);
-                return QUADRANT_COLORS[q];
-              }}
-              countryFilter={QUADRANT_LEGEND.find((item) => item.key === selectedLegendByMap.C)?.matches}
-              tooltipFn={(id) => {
-                const name = countryNames[id];
-                if (!name) return null;
-                const s = politicalStabilityData[id];
-                const g = gdpGrowthData[id];
-                const q = getQuadrant(s, g);
-                const labels: Record<string, string> = {
-                  "stable-thriving": "Stable & Thriving",
-                  "volatile-growing": "Volatile & Growing",
-                  "stable-stagnant": "Stable & Stagnant",
-                  "crisis": "Crisis Zone",
-                };
-                return { name, value: labels[q] ?? "Unknown" };
-              }}
-              highlightedCountryId={highlightedCountryId}
-            />
-            <MapLegend items={QUADRANT_LEGEND} selectedKey={selectedLegendByMap.C} onSelect={(key) => handleLegendSelect("C", key)} />
+            <div className="stability-map-layout">
+              <WorldChoropleth
+                colorFn={(id) => {
+                  const s = politicalStabilityData[id];
+                  const g = gdpGrowthData[id];
+                  if (s === undefined && g === undefined) return "#1a2435";
+                  const q = getQuadrant(s, g);
+                  return QUADRANT_COLORS[q];
+                }}
+                countryFilter={QUADRANT_LEGEND.find((item) => item.key === selectedLegendByMap.C)?.matches}
+                tooltipFn={(id) => {
+                  const name = countryNames[id];
+                  if (!name) return null;
+                  const s = politicalStabilityData[id];
+                  const g = gdpGrowthData[id];
+                  const q = getQuadrant(s, g);
+                  const labels: Record<string, string> = {
+                    "stable-thriving": "Stable & Thriving",
+                    "volatile-growing": "Volatile & Growing",
+                    "stable-stagnant": "Stable & Stagnant",
+                    "crisis": "Crisis Zone",
+                  };
+                  return { name, value: labels[q] ?? "Unknown" };
+                }}
+                highlightedCountryId={highlightedCountryId}
+                enableFullscreen
+              />
+              <MapLegend items={QUADRANT_LEGEND} selectedKey={selectedLegendByMap.C} onSelect={(key) => handleLegendSelect("C", key)} />
+            </div>
             <div style={{ marginTop: 14, fontSize: 12, color: "#4a5568" }}>
               Thresholds: Stability ≥ 0 = High (WGI 2023); GDP Growth ≥ 2% = High (approx. global mean 2024).
               Data: World Bank WGI 2023; World Bank National Accounts 2024.

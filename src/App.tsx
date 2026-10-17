@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ConflictSection from "./components/ConflictSection";
 import TradeSection from "./components/TradeSection";
 import StabilitySection from "./components/StabilitySection";
@@ -31,12 +31,7 @@ import ukSlide03 from "../image/image2/9EA16626-1CC7-4DD1-8DDC-91B083CEB52C.jpeg
 import ukSlide04 from "../image/image2/B44B888A-E26B-45B1-9633-3818C5A16918.jpeg";
 import ukSlide05 from "../image/image2/BEF4C4E8-5C04-4951-9CA6-0883948917BE.jpeg";
 import ukSlide06 from "../image/image2/FA5B2888-DE85-4123-9A21-ECFD9F1046A5.jpeg";
-import germanySlide01 from "../image/image3/1631D020-58CF-41BB-BF68-0EBE0EFAC21E.png";
-import germanySlide02 from "../image/image3/17B47DC3-025F-4A5E-BF05-282EA1D23EB7.png";
-import germanySlide03 from "../image/image3/4549407B-81E3-4C38-899A-3F7136EDF960.png";
-import germanySlide04 from "../image/image3/60042F54-BEEF-41F3-A6DC-0C943C3B7DC8.png";
-import germanySlide05 from "../image/image3/D110E113-48ED-43B9-BD81-AF06BEA7EE1B.png";
-import germanySlide06 from "../image/image3/E5EC8CC3-A2CE-404E-B996-2550EC094A9A.png";
+import germanyProfileImage from "../image/image20/イタリア・ドイツ関係図-13.png";
 import canadaSlide01 from "../image/image４/4B6CC347-56C2-48DD-B32F-63032D3A0D19.png";
 import canadaSlide02 from "../image/image４/9FBC2AC6-8203-41C9-8E49-A39208ACE07E.png";
 import canadaSlide03 from "../image/image４/A4B9FC44-55D7-4822-9991-E6E1DF3771FF.png";
@@ -73,6 +68,15 @@ import indiaSlide03 from "../image/image9/8814E41A-18E1-4209-98EA-19EE8EFFAA96.p
 import indiaSlide04 from "../image/image9/963FBDDB-E1BC-473E-ADEC-214FF8EB9255.png";
 import indiaSlide05 from "../image/image9/9ADC038D-DC8D-4254-8E83-C71AC2EAC3AB.png";
 import indiaSlide06 from "../image/image9/A398CA63-2D4A-49DF-B009-C685A91E0B47.png";
+import japanProfileImage from "../image/image19/イタリア・ドイツ関係図-12.png";
+import usProfileImage from "../image/image/image10/イタリア・ドイツ関係図-4.png";
+import franceProfileImage from "../image/image11/イタリア・ドイツ関係図-5.png";
+import indiaProfileImage from "../image/image13/イタリア・ドイツ関係図-6.png";
+import canadaProfileImage from "../image/image14/イタリア・ドイツ関係図-7.png";
+import ukProfileImage from "../image/image15/イタリア・ドイツ関係図-8.png";
+import italyProfileImage from "../image/image16/イタリア・ドイツ関係図-9.png";
+import russiaProfileImage from "../image/image17/イタリア・ドイツ関係図-10.png";
+import chinaProfileImage from "../image/image18/イタリア・ドイツ関係図-11.png";
 
 const NAV_LINKS = [
   { href: "#about", label: "About" },
@@ -150,93 +154,43 @@ const COUNTRY_ROTATION = [
 ] as const;
 
 const JAPAN_SLIDES = [
-  japanSlide01,
-  japanSlide02,
-  japanSlide03,
-  japanSlide04,
-  japanSlide05,
-  japanSlide06,
+  japanProfileImage,
 ] as const;
 
 const CHINA_SLIDES = [
-  chinaSlide01,
-  chinaSlide02,
-  chinaSlide03,
-  chinaSlide04,
-  chinaSlide05,
-  chinaSlide06,
+  chinaProfileImage,
 ] as const;
 
 const UK_SLIDES = [
-  ukSlide01,
-  ukSlide02,
-  ukSlide03,
-  ukSlide04,
-  ukSlide05,
-  ukSlide06,
+  ukProfileImage,
 ] as const;
 
 const GERMANY_SLIDES = [
-  germanySlide01,
-  germanySlide02,
-  germanySlide03,
-  germanySlide04,
-  germanySlide05,
-  germanySlide06,
+  germanyProfileImage,
 ] as const;
 
 const CANADA_SLIDES = [
-  canadaSlide01,
-  canadaSlide02,
-  canadaSlide03,
-  canadaSlide04,
-  canadaSlide05,
-  canadaSlide06,
+  canadaProfileImage,
 ] as const;
 
 const US_SLIDES = [
-  usSlide01,
-  usSlide02,
-  usSlide03,
-  usSlide04,
-  usSlide05,
-  usSlide06,
+  usProfileImage,
 ] as const;
 
 const ITALY_SLIDES = [
-  italySlide01,
-  italySlide02,
-  italySlide03,
-  italySlide04,
-  italySlide05,
-  italySlide06,
+  italyProfileImage,
 ] as const;
 
 const FRANCE_SLIDES = [
-  franceSlide01,
-  franceSlide02,
-  franceSlide03,
-  franceSlide04,
-  franceSlide05,
-  franceSlide06,
+  franceProfileImage,
 ] as const;
 
 const RUSSIA_SLIDES = [
-  russiaSlide01,
-  russiaSlide02,
-  russiaSlide03,
-  russiaSlide04,
-  russiaSlide05,
-  russiaSlide06,
+  russiaProfileImage,
 ] as const;
 
 const INDIA_SLIDES = [
-  indiaSlide01,
-  indiaSlide02,
-  indiaSlide03,
-  indiaSlide04,
-  indiaSlide05,
-  indiaSlide06,
+  indiaProfileImage,
 ] as const;
 
 const COUNTRY_BRIEF_DESCRIPTIONS: Record<string, string[]> = {
@@ -675,13 +629,29 @@ const QUIZ_QUESTIONS = [
 
 function QuizSection() {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
+  const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
 
   const handleSelect = (questionIndex: number, value: string) => {
+    if (selectedAnswers[questionIndex] !== undefined) return;
     setSelectedAnswers((current) => ({
       ...current,
       [questionIndex]: value,
     }));
   };
+
+  const restartQuiz = () => {
+    setSelectedAnswers({});
+    setActiveQuestionIndex(0);
+  };
+
+  const activeQuiz = QUIZ_QUESTIONS[activeQuestionIndex];
+  const selectedAnswer = selectedAnswers[activeQuestionIndex];
+  const isCorrect = selectedAnswer === activeQuiz?.correct;
+  const isComplete = activeQuestionIndex === QUIZ_QUESTIONS.length;
+  const score = QUIZ_QUESTIONS.reduce(
+    (total, quiz, index) => total + Number(selectedAnswers[index] === quiz.correct),
+    0,
+  );
 
   return (
     <section style={{ background: "#0c1118", padding: "80px 0", borderTop: "1px solid #1a2435" }}>
@@ -693,83 +663,94 @@ function QuizSection() {
           Test your geopolitical literacy
         </h2>
 
-        <div style={{ display: "grid", gap: 18 }}>
-          {QUIZ_QUESTIONS.map((quiz, index) => {
-            const selectedAnswer = selectedAnswers[index];
-            const isCorrect = selectedAnswer === quiz.correct;
+        <div style={{ marginBottom: 12, color: "#7a8899", fontSize: 13, fontFamily: "JetBrains Mono, monospace" }}>
+          {isComplete ? "QUIZ COMPLETE" : `QUESTION ${activeQuestionIndex + 1} OF ${QUIZ_QUESTIONS.length}`}
+        </div>
+        <div style={{ height: 4, background: "#1a2435", borderRadius: 4, marginBottom: 18, overflow: "hidden" }}>
+          <div style={{ width: `${(activeQuestionIndex / QUIZ_QUESTIONS.length) * 100}%`, height: "100%", background: "#dfa92a", transition: "width 0.2s ease" }} />
+        </div>
 
-            return (
-              <div
-                key={quiz.question}
-                style={{
-                  background: "#111922",
-                  border: "1px solid #1a2435",
-                  borderRadius: 12,
-                  padding: 20,
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                  <div style={{ color: "#dfa92a", fontFamily: "JetBrains Mono, monospace", fontSize: 12 }}>
-                    Q{index + 1}
-                  </div>
-                  <div style={{ color: "#dde4ee", fontSize: 17, lineHeight: 1.6, fontWeight: 600 }}>
-                    {quiz.question}
-                  </div>
-                </div>
+        {isComplete ? (
+          <div style={{ background: "#111922", border: "1px solid #1a2435", borderRadius: 12, padding: 24 }}>
+            <div style={{ color: "#dde4ee", fontSize: 20, fontWeight: 600, marginBottom: 8 }}>
+              You scored {score} out of {QUIZ_QUESTIONS.length}
+            </div>
+            <button
+              type="button"
+              onClick={restartQuiz}
+              style={{ background: "#dfa92a", color: "#070b10", border: 0, borderRadius: 8, padding: "10px 14px", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "Inter, sans-serif" }}
+            >
+              Try again
+            </button>
+          </div>
+        ) : (
+          <div
+            key={activeQuiz.question}
+            style={{ background: "#111922", border: "1px solid #1a2435", borderRadius: 12, padding: 20 }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <div style={{ color: "#dfa92a", fontFamily: "JetBrains Mono, monospace", fontSize: 12 }}>
+                Q{activeQuestionIndex + 1}
+              </div>
+              <div style={{ color: "#dde4ee", fontSize: 17, lineHeight: 1.6, fontWeight: 600 }}>
+                {activeQuiz.question}
+              </div>
+            </div>
 
-                <div style={{ display: "grid", gap: 10 }}>
-                  {quiz.options.map((option) => {
-                    const isSelected = selectedAnswer === option;
-                    const revealCorrect = selectedAnswer !== undefined && option === quiz.correct;
-                    const revealWrong = selectedAnswer !== undefined && isSelected && !isCorrect;
+            <div style={{ display: "grid", gap: 10 }}>
+              {activeQuiz.options.map((option) => {
+                const isSelected = selectedAnswer === option;
+                const revealCorrect = selectedAnswer !== undefined && option === activeQuiz.correct;
+                const revealWrong = selectedAnswer !== undefined && isSelected && !isCorrect;
 
-                    return (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => handleSelect(index, option)}
-                        style={{
-                          width: "100%",
-                          textAlign: "left",
-                          background: revealCorrect
-                            ? "rgba(18, 149, 93, 0.18)"
-                            : revealWrong
-                              ? "rgba(232, 93, 93, 0.15)"
-                              : isSelected
-                                ? "rgba(223, 169, 42, 0.12)"
-                                : "rgba(255,255,255,0.02)",
-                          color: "#dde4ee",
-                          border: `1px solid ${revealCorrect ? "#2fbf7f" : revealWrong ? "#e85d5d" : isSelected ? "#dfa92a" : "#243447"}`,
-                          borderRadius: 10,
-                          padding: "12px 14px",
-                          cursor: "pointer",
-                          fontSize: 14,
-                          transition: "all 0.2s ease",
-                          fontFamily: "Inter, sans-serif",
-                        }}
-                      >
-                        {option}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {selectedAnswer && (
-                  <div
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => handleSelect(activeQuestionIndex, option)}
+                    disabled={selectedAnswer !== undefined}
                     style={{
-                      marginTop: 14,
+                      width: "100%",
+                      textAlign: "left",
+                      background: revealCorrect
+                        ? "rgba(18, 149, 93, 0.18)"
+                        : revealWrong
+                          ? "rgba(232, 93, 93, 0.15)"
+                          : isSelected
+                            ? "rgba(223, 169, 42, 0.12)"
+                            : "rgba(255,255,255,0.02)",
+                      color: "#dde4ee",
+                      border: `1px solid ${revealCorrect ? "#2fbf7f" : revealWrong ? "#e85d5d" : isSelected ? "#dfa92a" : "#243447"}`,
+                      borderRadius: 10,
+                      padding: "12px 14px",
+                      cursor: selectedAnswer !== undefined ? "default" : "pointer",
                       fontSize: 14,
-                      fontWeight: 600,
-                      color: isCorrect ? "#6de5a8" : "#f7b3b3",
+                      transition: "all 0.2s ease",
+                      fontFamily: "Inter, sans-serif",
                     }}
                   >
-                    {isCorrect ? "⭕️ Correct!" : `❌ Incorrect. The correct answer is: ${quiz.correct}`}
-                  </div>
-                )}
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+
+            {selectedAnswer && (
+              <div style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: isCorrect ? "#6de5a8" : "#f7b3b3" }}>
+                  {isCorrect ? "Correct!" : `Incorrect. The correct answer is: ${activeQuiz.correct}`}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveQuestionIndex((current) => current + 1)}
+                  style={{ background: "#dfa92a", color: "#070b10", border: 0, borderRadius: 8, padding: "10px 14px", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "Inter, sans-serif" }}
+                >
+                  {activeQuestionIndex === QUIZ_QUESTIONS.length - 1 ? "See results" : "Next question"}
+                </button>
               </div>
-            );
-          })}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -815,10 +796,56 @@ function CountryRelationships() {
   const [franceSlideIndex, setFranceSlideIndex] = useState(0);
   const [russiaSlideIndex, setRussiaSlideIndex] = useState(0);
   const [indiaSlideIndex, setIndiaSlideIndex] = useState(0);
+  const [isImageFullscreen, setIsImageFullscreen] = useState(false);
+  const [miniMapPosition, setMiniMapPosition] = useState<{ left: number; top: number } | null>(null);
+  const miniMapRef = useRef<HTMLDivElement>(null);
+  const miniMapDragStart = useRef<{ pointerX: number; pointerY: number; left: number; top: number } | null>(null);
+
+  useEffect(() => {
+    if (!isImageFullscreen) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsImageFullscreen(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isImageFullscreen]);
 
   const activeCountry = selectedProfile ? selectedProfile.country : RELATIONSHIP_INFOGRAPHICS[0].country;
   const activeProfile = selectedProfile ?? RELATIONSHIP_INFOGRAPHICS.find((profile) => profile.country === activeCountry) ?? RELATIONSHIP_INFOGRAPHICS[0];
   const activeDescription = COUNTRY_BRIEF_DESCRIPTIONS[activeProfile.country] ?? ["", ""];
+
+  const startMiniMapDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!miniMapRef.current) return;
+    const bounds = miniMapRef.current.getBoundingClientRect();
+    miniMapDragStart.current = {
+      pointerX: event.clientX,
+      pointerY: event.clientY,
+      left: bounds.left,
+      top: bounds.top,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+
+  const moveMiniMap = (event: React.PointerEvent<HTMLDivElement>) => {
+    const start = miniMapDragStart.current;
+    const panel = miniMapRef.current;
+    if (!start || !panel) return;
+    const bounds = panel.getBoundingClientRect();
+    setMiniMapPosition({
+      left: Math.max(0, Math.min(window.innerWidth - bounds.width, start.left + event.clientX - start.pointerX)),
+      top: Math.max(0, Math.min(window.innerHeight - bounds.height, start.top + event.clientY - start.pointerY)),
+    });
+  };
+
+  const stopMiniMapDrag = () => {
+    miniMapDragStart.current = null;
+  };
 
   const getSlidesForCountry = (country: string) => {
     switch (country) {
@@ -884,7 +911,8 @@ function CountryRelationships() {
   };
 
   const currentSlideIndex = getSlideIndexForCountry(activeCountry);
-  const currentImage = getSlidesForCountry(activeCountry)[currentSlideIndex] ?? activeProfile.image;
+  const activeSlides = getSlidesForCountry(activeCountry);
+  const currentImage = activeSlides[currentSlideIndex] ?? activeProfile.image;
   const currentAltText = `${activeProfile.country} relationship visual ${currentSlideIndex + 1}`;
 
   return (
@@ -903,11 +931,11 @@ function CountryRelationships() {
         <div
           style={{
             marginBottom: 22,
-            color: "#e85d5d",
-            fontSize: 22,
-            fontWeight: 600,
-            lineHeight: 1.5,
-            letterSpacing: 0.2,
+            color: "#7a8899",
+            fontSize: 15,
+            fontWeight: 400,
+            lineHeight: 1.7,
+            letterSpacing: 0,
             fontFamily: "Inter, sans-serif",
           }}
         >
@@ -980,27 +1008,35 @@ function CountryRelationships() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center" }}>
+            {activeSlides.length > 1 && (
+              <button
+                type="button"
+                onClick={goToPreviousSlide}
+                aria-label="Previous country profile image"
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: "50%",
+                  border: "1px solid #243447",
+                  background: "#111922",
+                  color: "#dde4ee",
+                  fontSize: 24,
+                  lineHeight: 1,
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              >
+                ←
+              </button>
+            )}
+
             <button
               type="button"
-              onClick={goToPreviousSlide}
-              aria-label="Previous country profile image"
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: "50%",
-                border: "1px solid #243447",
-                background: "#111922",
-                color: "#dde4ee",
-                fontSize: 24,
-                lineHeight: 1,
-                cursor: "pointer",
-                flexShrink: 0,
-              }}
+              onClick={() => setIsImageFullscreen(true)}
+              aria-label={`View ${activeProfile.country} profile image fullscreen`}
+              title="View fullscreen"
+              style={{ flex: "1 1 auto", display: "flex", justifyContent: "center", border: 0, padding: 0, background: "transparent", cursor: "zoom-in" }}
             >
-              ←
-            </button>
-
-            <div style={{ flex: "1 1 auto", display: "flex", justifyContent: "center" }}>
               <img
                 src={currentImage}
                 alt={currentAltText}
@@ -1018,27 +1054,29 @@ function CountryRelationships() {
                   imageRendering: "auto",
                 }}
               />
-            </div>
-
-            <button
-              type="button"
-              onClick={goToNextSlide}
-              aria-label="Next country profile image"
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: "50%",
-                border: "1px solid #243447",
-                background: "#111922",
-                color: "#dde4ee",
-                fontSize: 24,
-                lineHeight: 1,
-                cursor: "pointer",
-                flexShrink: 0,
-              }}
-            >
-              →
             </button>
+
+            {activeSlides.length > 1 && (
+              <button
+                type="button"
+                onClick={goToNextSlide}
+                aria-label="Next country profile image"
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: "50%",
+                  border: "1px solid #243447",
+                  background: "#111922",
+                  color: "#dde4ee",
+                  fontSize: 24,
+                  lineHeight: 1,
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              >
+                →
+              </button>
+            )}
           </div>
 
           <div style={{ marginTop: 16, color: "#dde4ee", fontSize: 14, lineHeight: 1.7 }}>
@@ -1047,6 +1085,79 @@ function CountryRelationships() {
           </div>
         </div>
       </div>
+      {isImageFullscreen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${activeProfile.country} profile image`}
+          onClick={() => setIsImageFullscreen(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, background: "rgba(3, 6, 10, 0.97)" }}
+        >
+          <button
+            type="button"
+            onClick={() => setIsImageFullscreen(false)}
+            aria-label="Close fullscreen image"
+            style={{ position: "absolute", top: 18, right: 20, zIndex: 2, border: "1px solid #3b536e", borderRadius: 6, background: "#111922", color: "#dde4ee", padding: "9px 13px", cursor: "pointer", fontSize: 13 }}
+          >
+            Close
+          </button>
+          <img
+            src={currentImage}
+            alt={currentAltText}
+            onClick={(event) => event.stopPropagation()}
+            style={{ display: "block", maxWidth: "96vw", maxHeight: "94vh", width: "auto", height: "auto", objectFit: "contain", borderRadius: 6, boxShadow: "0 20px 70px rgba(0,0,0,0.7)" }}
+          />
+          <div
+            ref={miniMapRef}
+            onClick={(event) => event.stopPropagation()}
+            onPointerMove={moveMiniMap}
+            onPointerUp={stopMiniMapDrag}
+            onPointerCancel={stopMiniMapDrag}
+            style={{ position: "absolute", left: miniMapPosition?.left ?? 20, top: miniMapPosition?.top, bottom: miniMapPosition ? undefined : 20, width: "min(340px, calc(100vw - 40px))", padding: 12, border: "1px solid #304258", borderRadius: 8, background: "rgba(7, 11, 16, 0.94)", boxShadow: "0 12px 40px rgba(0,0,0,0.55)" }}
+          >
+            <div
+              onPointerDown={startMiniMapDrag}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8, cursor: "grab", touchAction: "none", userSelect: "none" }}
+            >
+              <span style={{ color: "#dfa92a", fontFamily: "JetBrains Mono, monospace", fontSize: 10, letterSpacing: 1 }}>SELECT COUNTRY</span>
+              <span style={{ color: "#dde4ee", fontSize: 12 }}>{activeProfile.country}</span>
+            </div>
+            <svg viewBox="0 0 900 430" role="group" aria-label="World map country selector" style={{ display: "block", width: "100%", height: "auto", borderRadius: 5, background: "#0b1420" }}>
+              <g fill="#1b2b3c" stroke="#34485e" strokeWidth={1.5}>
+                <path d="M 70 190 Q 98 138 150 120 L 210 80 Q 238 68 252 98 L 256 150 L 226 210 L 192 234 L 150 260 L 112 252 L 90 218 Z" />
+                <path d="M 292 112 L 324 92 L 352 96 L 372 88 L 394 96 L 423 111 L 447 122 L 437 160 L 392 176 L 354 170 L 316 152 Z" />
+                <path d="M 348 186 L 390 188 L 432 212 L 448 258 L 432 332 L 392 360 L 360 330 L 346 276 L 338 228 Z" />
+                <path d="M 456 114 L 505 90 L 560 78 L 620 104 L 670 126 L 718 104 L 794 118 L 810 154 L 776 206 L 718 224 L 668 246 L 620 206 L 584 181 L 536 206 L 500 210 L 472 166 Z" />
+                <path d="M 568 332 L 620 326 L 648 352 L 634 400 L 592 394 L 570 360 Z" />
+              </g>
+              {COUNTRY_CAPITAL_POSITIONS.map(({ country, flag, x, y }) => {
+                const profile = RELATIONSHIP_INFOGRAPHICS.find((item) => item.country === country);
+                if (!profile) return null;
+                const isSelected = activeCountry === country;
+                return (
+                  <g
+                    key={country}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Select ${country}`}
+                    onClick={() => setSelectedProfile(profile)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedProfile(profile);
+                      }
+                    }}
+                    style={{ cursor: "pointer", outline: "none" }}
+                  >
+                    <circle cx={x} cy={y} r={isSelected ? 21 : 17} fill={isSelected ? "rgba(223,169,42,0.28)" : "rgba(7,11,16,0.82)"} stroke={isSelected ? "#f6d365" : "#8b9aab"} strokeWidth={isSelected ? 4 : 2} />
+                    <text x={x} y={y + 6} textAnchor="middle" fontSize={19} style={{ pointerEvents: "none", userSelect: "none" }}>{flag}</text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
