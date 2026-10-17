@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import WorldChoropleth, {
   stabilityColor, gdpColor, QUADRANT_COLORS, getQuadrant,
 } from "./WorldChoropleth";
@@ -23,10 +23,11 @@ interface MapLegendItem {
   matches: (countryId: string) => boolean;
 }
 
-function MapLegend({ items, selectedKey, onSelect }: {
+function MapLegend({ items, selectedKey, onSelect, note }: {
   items: MapLegendItem[];
   selectedKey: string | null;
   onSelect: (key: string) => void;
+  note?: ReactNode;
 }) {
   return (
     <div className="stability-map-legend">
@@ -46,6 +47,11 @@ function MapLegend({ items, selectedKey, onSelect }: {
           </button>
         );
       })}
+      {note && (
+        <div style={{ marginTop: 4, paddingTop: 12, borderTop: "1px solid #1a2435", fontSize: 12, color: "#7a8899", lineHeight: 1.6 }}>
+          {note}
+        </div>
+      )}
     </div>
   );
 }
@@ -88,6 +94,10 @@ const deathMarkers = conflictsByDeaths.map((c) => ({
 }));
 
 const nonUkraineTradeRoutes = conflictTradeRoutes.filter((route) => route.rank !== 1);
+
+function getRouteKey(route: (typeof conflictTradeRoutes)[number]) {
+  return `${route.rank}-${route.hsCode}-${route.origin}-${route.destination}`;
+}
 
 function formatRouteTradeValue(value: number) {
   return value >= 1_000_000_000 ? `$${(value / 1_000_000_000).toFixed(2)}B` : `$${(value / 1_000_000).toFixed(1)}M`;
@@ -239,6 +249,8 @@ export default function StabilitySection() {
   const [activeTab, setActiveTab] = useState<"A" | "B" | "C">("A");
   const [highlightedCountryId, setHighlightedCountryId] = useState<string | null>(null);
   const [selectedLegendByMap, setSelectedLegendByMap] = useState<Record<"A" | "B" | "C", string | null>>({ A: null, B: null, C: null });
+  const [selectedRouteKey, setSelectedRouteKey] = useState<string | null>(null);
+  const selectedRoute = nonUkraineTradeRoutes.find((route) => getRouteKey(route) === selectedRouteKey);
 
   const handleCountrySelect = (countryId: string | null) => {
     setHighlightedCountryId((prev) => (prev === countryId ? null : countryId));
@@ -342,11 +354,21 @@ export default function StabilitySection() {
                   };
                 }}
                 markers={deathMarkers}
-                tradeRoutes={nonUkraineTradeRoutes}
+                tradeRoutes={selectedRoute ? [selectedRoute] : undefined}
                 highlightedCountryId={highlightedCountryId}
                 enableFullscreen
               />
-              <MapLegend items={GDP_LEGEND} selectedKey={selectedLegendByMap.B} onSelect={(key) => handleLegendSelect("B", key)} />
+              <MapLegend
+                items={GDP_LEGEND}
+                selectedKey={selectedLegendByMap.B}
+                onSelect={(key) => handleLegendSelect("B", key)}
+                note={
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                    <div style={{ width: 10, height: 10, background: "#dfa92a", borderRadius: "50%", flexShrink: 0, marginTop: 5 }} />
+                    <span>Gold markers = top-10 conflict locations by battle deaths (hover over the map countries for GDP data)</span>
+                  </div>
+                }
+              />
             </div>
             <div style={{ marginTop: 20, padding: "18px 20px", background: "#111922", border: "1px solid #1a2435", borderLeft: "3px solid #dfa92a", borderRadius: 8 }}>
               <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: "#dfa92a", letterSpacing: 1, marginBottom: 8 }}>
@@ -373,32 +395,53 @@ export default function StabilitySection() {
               </div>
             </div>
             <div style={{ marginTop: 20, borderTop: "1px solid #1a2435", paddingTop: 16 }}>
-              <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: "#dde4ee", letterSpacing: 1, marginBottom: 10 }}>
+              <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 11, color: "#dde4ee", letterSpacing: 1, marginBottom: 6 }}>
                 VERIFIED BILATERAL TRADE CHANGES · NON-UKRAINE CONFLICTS
+              </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 10, fontSize: 12, color: "#dfa92a" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M9 9l5 12 1.8-5.2L21 14z" />
+                    <path d="M7.2 2.2L8 5.1M5.1 8l-2.9-.8M14 4.1L12 6M6 12l-1.9 2" />
+                  </svg>
+                  {selectedRoute
+                    ? `Showing ${selectedRoute.origin} → ${selectedRoute.destination} on the map. Click it again to hide.`
+                    : "Click a trade route below to show it on the map."}
+                </span>
+                {selectedRoute && (
+                  <button type="button" className="trade-route-clear" onClick={() => setSelectedRouteKey(null)}>
+                    Clear route
+                  </button>
+                )}
               </div>
               <div style={{ display: "grid", gap: 8, maxHeight: 320, overflowY: "auto", overscrollBehaviorY: "contain", paddingRight: 6 }}>
                 {nonUkraineTradeRoutes.map((route) => {
                   const change = ((route.afterValueUsd - route.beforeValueUsd) / route.beforeValueUsd) * 100;
                   const color = change >= 0 ? "#22c55e" : "#ef4444";
+                  const routeKey = getRouteKey(route);
+                  const selected = routeKey === selectedRouteKey;
                   return (
-                    <div key={`${route.rank}-${route.hsCode}-${route.origin}-${route.destination}`} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr) auto", alignItems: "center", gap: 12, padding: "9px 0", borderBottom: "1px solid #1a2435", fontSize: 12 }}>
+                    <button
+                      key={routeKey}
+                      type="button"
+                      className="trade-route-option"
+                      aria-pressed={selected}
+                      onClick={() => setSelectedRouteKey(selected ? null : routeKey)}
+                      style={{ borderLeftColor: selected ? color : "transparent", fontSize: 12 }}
+                    >
                       <span style={{ color: "#dde4ee" }}>{route.origin} → {route.destination}</span>
                       <span style={{ color: "#7a8899" }}>{route.commodity} (HS {route.hsCode})</span>
                       <span style={{ color, fontFamily: "JetBrains Mono, monospace", textAlign: "right" }}>{change > 0 ? "+" : ""}{change.toFixed(1)}%</span>
                       <span style={{ gridColumn: "1 / -1", color: "#4a5568" }}>
                         {route.beforeYear} {formatRouteTradeValue(route.beforeValueUsd)} → {route.afterYear} {formatRouteTradeValue(route.afterValueUsd)}
                       </span>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
               <div style={{ marginTop: 10, fontSize: 11, color: "#4a5568" }}>
                 Green routes increased; red routes decreased. Values are reported bilateral trade values, not proof that conflict caused the change.
               </div>
-            </div>
-            <div style={{ marginTop: 10, fontSize: 12, color: "#4a5568", display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 10, height: 10, background: "#dfa92a", borderRadius: "50%" }} />
-              Gold markers = top-10 conflict locations by battle deaths (hover over the map countries for GDP data)
             </div>
           </div>
         )}

@@ -484,14 +484,20 @@ export default function RelationshipSection() {
         <div
           style={{
             marginBottom: 22,
-            color: "#e85d5d",
-            fontSize: 22,
-            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            color: "#dfa92a",
+            fontSize: 14,
+            fontWeight: 500,
             lineHeight: 1.5,
-            letterSpacing: 0.2,
             fontFamily: "Inter, sans-serif",
           }}
         >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M9 9l5 12 1.8-5.2L21 14z" />
+            <path d="M7.2 2.2L8 5.1M5.1 8l-2.9-.8M14 4.1L12 6M6 12l-1.9 2" />
+          </svg>
           Click on a country to see its specific relationships.
         </div>
 

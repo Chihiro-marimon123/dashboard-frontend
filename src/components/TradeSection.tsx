@@ -17,6 +17,10 @@ const routeProjection = geoNaturalEarth1()
   .scale(155)
   .translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
 
+const ROUTE_DOT_RADIUS = 2.5;
+const ROUTE_ARROW_SIZE = 6;
+const ROUTE_LABEL_OFFSET = 9;
+
 function getRouteGeometry(route: ConflictTradeRoute) {
   const start = routeProjection(route.originCoords);
   const end = routeProjection(route.destinationCoords);
@@ -25,20 +29,38 @@ function getRouteGeometry(route: ConflictTradeRoute) {
   const dx = end[0] - start[0];
   const dy = end[1] - start[1];
   const distance = Math.hypot(dx, dy);
-  const bend = Math.min(distance * 0.18, 34);
-  const controlX = (start[0] + end[0]) / 2 - (dy / distance) * bend;
-  const controlY = (start[1] + end[1]) / 2 + (dx / distance) * bend;
-  const angle = Math.atan2(end[1] - controlY, end[0] - controlX);
-  const arrowSize = 7;
+  const ux = dx / distance;
+  const uy = dy / distance;
+  const bend = Math.min(distance * 0.22, 34);
+  const controlX = (start[0] + end[0]) / 2 - uy * bend;
+  const controlY = (start[1] + end[1]) / 2 + ux * bend;
+
+  // Trim both ends so the line leaves the origin dot and the arrow tip stops at the destination dot's edge.
+  const gap = ROUTE_DOT_RADIUS + 1.5;
+  const startAngle = Math.atan2(controlY - start[1], controlX - start[0]);
+  const endAngle = Math.atan2(end[1] - controlY, end[0] - controlX);
+  const lineStart = [start[0] + gap * Math.cos(startAngle), start[1] + gap * Math.sin(startAngle)];
+  const arrowSize = Math.min(ROUTE_ARROW_SIZE, distance * 0.3);
+  const tip = [end[0] - gap * Math.cos(endAngle), end[1] - gap * Math.sin(endAngle)];
+  const arrowBase = [tip[0] - arrowSize * Math.cos(endAngle), tip[1] - arrowSize * Math.sin(endAngle)];
   const arrow = [
-    `${end[0]},${end[1]}`,
-    `${end[0] - arrowSize * Math.cos(angle - Math.PI / 6)},${end[1] - arrowSize * Math.sin(angle - Math.PI / 6)}`,
-    `${end[0] - arrowSize * Math.cos(angle + Math.PI / 6)},${end[1] - arrowSize * Math.sin(angle + Math.PI / 6)}`,
+    `${tip[0]},${tip[1]}`,
+    `${tip[0] - arrowSize * Math.cos(endAngle - Math.PI / 7)},${tip[1] - arrowSize * Math.sin(endAngle - Math.PI / 7)}`,
+    `${tip[0] - arrowSize * Math.cos(endAngle + Math.PI / 7)},${tip[1] - arrowSize * Math.sin(endAngle + Math.PI / 7)}`,
   ].join(" ");
 
+  // Push each label away from the other endpoint so close pairs don't overlap.
+  const labelOffset = (sign: number): { x: number; y: number; anchor: "start" | "middle" | "end" } => ({
+    x: sign * ux * ROUTE_LABEL_OFFSET,
+    y: sign * uy * ROUTE_LABEL_OFFSET + 3,
+    anchor: Math.abs(ux) < 0.35 ? "middle" : sign * ux > 0 ? "start" : "end",
+  });
+
   return {
-    path: `M ${start[0]},${start[1]} Q ${controlX},${controlY} ${end[0]},${end[1]}`,
+    path: `M ${lineStart[0]},${lineStart[1]} Q ${controlX},${controlY} ${arrowBase[0]},${arrowBase[1]}`,
     arrow,
+    originLabel: labelOffset(-1),
+    destinationLabel: labelOffset(1),
   };
 }
 
@@ -102,12 +124,79 @@ export default function TradeSection() {
           ))}
         </div>
 
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 16, fontWeight: 600, color: "#dde4ee" }}>
+            Trade in {conflict.country}: exports and imports
+          </div>
+          <div style={{ fontSize: 12, color: "#7a8899", marginTop: 4 }}>
+            Conflict onset: {conflict.period} · Values are annual merchandise trade in current US dollars
+          </div>
+        </div>
+
+        <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid #1a2435" }}>
+          <ComposableMap
+            projection="geoNaturalEarth1"
+            projectionConfig={{ scale: 155 }}
+            width={MAP_WIDTH}
+            height={MAP_HEIGHT}
+            style={{ width: "100%", height: "auto", display: "block", background: "#070b10" }}
+          >
+            <Geographies geography={GEO_URL}>
+              {({ geographies }) => geographies.map((geo) => {
+                const isSelected = String(geo.id) === trade?.countryId;
+                return (
+                  <Geography
+                    key={geo.rsmKey}
+                    geography={geo}
+                    fill={isSelected ? "#dfa92a" : "#141e2e"}
+                    stroke={isSelected ? "#fff0b3" : "#0c1420"}
+                    strokeWidth={isSelected ? 1 : 0.4}
+                    style={{ default: { outline: "none" }, hover: { outline: "none" }, pressed: { outline: "none" } }}
+                  />
+                );
+              })}
+            </Geographies>
+            {routeGeometry && tradeRoute && (
+              <g>
+                <path d={routeGeometry.path} fill="none" stroke="#070b10" strokeWidth={4.5} strokeLinecap="round" />
+                <path d={routeGeometry.path} fill="none" stroke="#f0c75e" strokeWidth={2} strokeLinecap="round" />
+                <polygon points={routeGeometry.arrow} fill="#f0c75e" stroke="#070b10" strokeWidth={1} strokeLinejoin="round" />
+              </g>
+            )}
+            {tradeRoute && (
+              <>
+                <Marker coordinates={tradeRoute.originCoords}>
+                  <circle r={ROUTE_DOT_RADIUS} fill="#fff0b3" stroke="#070b10" strokeWidth={1.25} />
+                  <text x={routeGeometry?.originLabel.x ?? 0} y={routeGeometry?.originLabel.y ?? -9} textAnchor={routeGeometry?.originLabel.anchor ?? "middle"} style={{ fontSize: 8, fill: "#fff0b3", fontFamily: "JetBrains Mono, monospace", fontWeight: "bold" }}>{tradeRoute.origin}</text>
+                </Marker>
+                <Marker coordinates={tradeRoute.destinationCoords}>
+                  <circle r={ROUTE_DOT_RADIUS} fill="#fff0b3" stroke="#070b10" strokeWidth={1.25} />
+                  <text x={routeGeometry?.destinationLabel.x ?? 0} y={routeGeometry?.destinationLabel.y ?? -9} textAnchor={routeGeometry?.destinationLabel.anchor ?? "middle"} style={{ fontSize: 8, fill: "#fff0b3", fontFamily: "JetBrains Mono, monospace", fontWeight: "bold" }}>{tradeRoute.destination}</text>
+                </Marker>
+              </>
+            )}
+          </ComposableMap>
+          <div style={{ position: "absolute", left: 16, top: 16, display: "flex", alignItems: "center", gap: 8, background: "rgba(7,11,16,0.88)", border: "1px solid #1a2435", borderRadius: 6, padding: "8px 12px" }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: "#dfa92a" }} />
+            <span style={{ fontSize: 12, color: "#dde4ee" }}>{conflict.country}</span>
+          </div>
+          {tradeRoute && (
+            <div style={{ position: "absolute", right: 16, top: 16, maxWidth: "min(360px, 58%)", background: "rgba(7,11,16,0.9)", border: "1px solid #76612e", borderRadius: 6, padding: "10px 12px" }}>
+              <div style={{ color: "#f0c75e", fontSize: 11, fontFamily: "JetBrains Mono, monospace", marginBottom: 5 }}>{tradeRoute.commodity}</div>
+              <div style={{ color: "#dde4ee", fontSize: 12 }}>{tradeRoute.origin} → {tradeRoute.destination}</div>
+              <div style={{ color: "#b0b8c8", fontSize: 11, marginTop: 5 }}>
+                {tradeRoute.beforeYear} {formatRouteValue(tradeRoute.beforeValueUsd)} → {tradeRoute.afterYear} {formatRouteValue(tradeRoute.afterValueUsd)}
+              </div>
+            </div>
+          )}
+        </div>
+
         <div style={{
           background: "#111922",
           border: "1px solid #1a2435",
           borderRadius: 10,
           padding: "24px 28px",
-          marginBottom: 32,
+          marginTop: 20,
           display: "grid",
           gridTemplateColumns: "1fr 1fr 1fr",
           gap: 24,
@@ -143,72 +232,6 @@ export default function TradeSection() {
             <div style={{ fontSize: 11, color: "#7a8899", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Root Cause</div>
             <div style={{ fontSize: 14, color: "#b0b8c8", lineHeight: 1.6 }}>{conflict.cause}</div>
           </div>
-        </div>
-
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 16, fontWeight: 600, color: "#dde4ee" }}>
-            Trade in {conflict.country}: exports and imports
-          </div>
-          <div style={{ fontSize: 12, color: "#7a8899", marginTop: 4 }}>
-            Conflict onset: {conflict.period} · Values are annual merchandise trade in current US dollars
-          </div>
-        </div>
-
-        <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid #1a2435" }}>
-          <ComposableMap
-            projection="geoNaturalEarth1"
-            projectionConfig={{ scale: 155 }}
-            width={MAP_WIDTH}
-            height={MAP_HEIGHT}
-            style={{ width: "100%", height: "auto", display: "block", background: "#070b10" }}
-          >
-            <Geographies geography={GEO_URL}>
-              {({ geographies }) => geographies.map((geo) => {
-                const isSelected = String(geo.id) === trade?.countryId;
-                return (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill={isSelected ? "#dfa92a" : "#141e2e"}
-                    stroke={isSelected ? "#fff0b3" : "#0c1420"}
-                    strokeWidth={isSelected ? 1 : 0.4}
-                    style={{ default: { outline: "none" }, hover: { outline: "none" }, pressed: { outline: "none" } }}
-                  />
-                );
-              })}
-            </Geographies>
-            {routeGeometry && tradeRoute && (
-              <g>
-                <path d={routeGeometry.path} fill="none" stroke="#f0c75e" strokeWidth={3} strokeOpacity={0.95} strokeLinecap="round" />
-                <polygon points={routeGeometry.arrow} fill="#f0c75e" />
-              </g>
-            )}
-            {tradeRoute && (
-              <>
-                <Marker coordinates={tradeRoute.originCoords}>
-                  <circle r={5} fill="#f0c75e" stroke="#070b10" strokeWidth={1.5} />
-                  <text y={-9} textAnchor="middle" style={{ fontSize: 8, fill: "#fff0b3", fontFamily: "JetBrains Mono, monospace", fontWeight: "bold" }}>{tradeRoute.origin}</text>
-                </Marker>
-                <Marker coordinates={tradeRoute.destinationCoords}>
-                  <circle r={5} fill="#f0c75e" stroke="#070b10" strokeWidth={1.5} />
-                  <text y={-9} textAnchor="middle" style={{ fontSize: 8, fill: "#fff0b3", fontFamily: "JetBrains Mono, monospace", fontWeight: "bold" }}>{tradeRoute.destination}</text>
-                </Marker>
-              </>
-            )}
-          </ComposableMap>
-          <div style={{ position: "absolute", left: 16, top: 16, display: "flex", alignItems: "center", gap: 8, background: "rgba(7,11,16,0.88)", border: "1px solid #1a2435", borderRadius: 6, padding: "8px 12px" }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: "#dfa92a" }} />
-            <span style={{ fontSize: 12, color: "#dde4ee" }}>{conflict.country}</span>
-          </div>
-          {tradeRoute && (
-            <div style={{ position: "absolute", right: 16, top: 16, maxWidth: "min(360px, 58%)", background: "rgba(7,11,16,0.9)", border: "1px solid #76612e", borderRadius: 6, padding: "10px 12px" }}>
-              <div style={{ color: "#f0c75e", fontSize: 11, fontFamily: "JetBrains Mono, monospace", marginBottom: 5 }}>{tradeRoute.commodity}</div>
-              <div style={{ color: "#dde4ee", fontSize: 12 }}>{tradeRoute.origin} → {tradeRoute.destination}</div>
-              <div style={{ color: "#b0b8c8", fontSize: 11, marginTop: 5 }}>
-                {tradeRoute.beforeYear} {formatRouteValue(tradeRoute.beforeValueUsd)} → {tradeRoute.afterYear} {formatRouteValue(tradeRoute.afterValueUsd)}
-              </div>
-            </div>
-          )}
         </div>
 
         <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12 }}>

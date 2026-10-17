@@ -58,6 +58,52 @@ html { scroll-behavior: smooth; }
   border-left: 1px solid #1a2435;
 }
 
+.trade-route-option {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-bottom: 1px solid #1a2435;
+  border-left: 3px solid transparent;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.trade-route-option:hover {
+  background: rgba(223, 169, 42, 0.08);
+}
+
+.trade-route-option[aria-pressed="true"] {
+  background: rgba(223, 169, 42, 0.14);
+}
+
+.trade-route-option:focus-visible,
+.trade-route-clear:focus-visible {
+  outline: 2px solid #dfa92a;
+  outline-offset: 2px;
+}
+
+.trade-route-clear {
+  padding: 4px 10px;
+  border: 1px solid #3b536e;
+  border-radius: 6px;
+  background: transparent;
+  color: #dde4ee;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.trade-route-clear:hover {
+  border-color: #dfa92a;
+}
+
 .world-choropleth-expand,
 .world-choropleth-close {
   position: absolute;

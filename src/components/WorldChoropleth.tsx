@@ -182,8 +182,9 @@ export default function WorldChoropleth({ colorFn, tooltipFn, markers, tradeRout
           const color = route.afterValueUsd >= route.beforeValueUsd ? "#22c55e" : "#ef4444";
           return (
             <g key={`${route.rank}-${route.hsCode}-${route.origin}-${route.destination}`}>
-              <path d={geometry.d} fill="none" stroke={color} strokeWidth={2.5} strokeOpacity={0.9} strokeLinecap="round" />
-              <polygon points={geometry.arrow} fill={color} />
+              <path d={geometry.d} fill="none" stroke="#070b10" strokeWidth={5} strokeLinecap="round" />
+              <path d={geometry.d} fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round" />
+              <polygon points={geometry.arrow} fill={color} stroke="#070b10" strokeWidth={1} strokeLinejoin="round" />
               <Marker coordinates={route.originCoords}>
                 <circle r={3.5} fill={color} stroke="#070b10" strokeWidth={1} />
               </Marker>
