@@ -13,70 +13,11 @@ import italyInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_12_5
 import russiaInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_12_52 AM (7).png";
 import chinaInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_12_54 AM (8).png";
 import indiaInfographic from "./attachments/ChatGPT Image Sep 5, 2026 at 12_12_56 AM (9).png";
-import japanSlide01 from "../image/8BA7CE65-BF22-41C0-9B86-ECE4CB971152.jpeg";
-import japanSlide02 from "../image/9F1CB192-29A4-4226-87C1-ED7EA20B16A2.jpeg";
-import japanSlide03 from "../image/A2503E5D-A48B-4373-9354-A2A1D928CD8F.jpeg";
-import japanSlide04 from "../image/AC5CE677-6597-4F62-9BE9-D0DE84B51DBB.jpeg";
-import japanSlide05 from "../image/B71A24E7-D8B0-4425-9E97-A9F04BC67914.jpeg";
-import japanSlide06 from "../image/C348DB11-F3DB-44E6-96DB-1D936F31CDC6.jpeg";
-import chinaSlide01 from "../image/image/20216323-598E-4181-A1A3-ED8D30A5B28C.jpeg";
-import chinaSlide02 from "../image/image/2D702288-BC25-4079-A36B-A35B2DC8EBD4.jpeg";
-import chinaSlide03 from "../image/image/3B435241-ED76-4DD8-A8CB-673E1BB02BED.jpeg";
-import chinaSlide04 from "../image/image/44429AE3-7FDA-44EC-B280-BAB4808E2B88.jpeg";
-import chinaSlide05 from "../image/image/4A61952F-C6C2-4AEA-9E9B-766867FC88AB.jpeg";
-import chinaSlide06 from "../image/image/FE1D20D7-9237-4F5D-970C-FC3476B80C8D.jpeg";
-import ukSlide01 from "../image/image2/1224AF44-89BC-4302-858B-9DCA84D57E7F.jpeg";
-import ukSlide02 from "../image/image2/7F71FAEE-8AB2-48AF-B5D2-303B97E0925F.jpeg";
-import ukSlide03 from "../image/image2/9EA16626-1CC7-4DD1-8DDC-91B083CEB52C.jpeg";
-import ukSlide04 from "../image/image2/B44B888A-E26B-45B1-9633-3818C5A16918.jpeg";
-import ukSlide05 from "../image/image2/BEF4C4E8-5C04-4951-9CA6-0883948917BE.jpeg";
-import ukSlide06 from "../image/image2/FA5B2888-DE85-4123-9A21-ECFD9F1046A5.jpeg";
-import germanyProfileImage from "../image/image20/イタリア・ドイツ関係図-13.png";
-import canadaSlide01 from "../image/image４/4B6CC347-56C2-48DD-B32F-63032D3A0D19.png";
-import canadaSlide02 from "../image/image４/9FBC2AC6-8203-41C9-8E49-A39208ACE07E.png";
-import canadaSlide03 from "../image/image４/A4B9FC44-55D7-4822-9991-E6E1DF3771FF.png";
-import canadaSlide04 from "../image/image４/A9D2BEB6-7E3F-4BE2-885C-F9D2C2F6A1F4.png";
-import canadaSlide05 from "../image/image４/C0D15173-5449-4778-A619-D15F73B5580D.png";
-import canadaSlide06 from "../image/image４/FDAE8AA6-BC09-41F0-A091-927EC8B50C0E.png";
-import usSlide01 from "../image/image5/27BC8C09-1FB0-4EFC-AFDA-BB85A9074A10.png";
-import usSlide02 from "../image/image5/2D59ADB5-6F29-41F8-B2D6-B716AA19C2A0.png";
-import usSlide03 from "../image/image5/3F986D33-A20E-46A6-8B4A-3B17C9F28400.png";
-import usSlide04 from "../image/image5/61387741-E653-4505-BF6F-9274235AC5B4.png";
-import usSlide05 from "../image/image5/D3DB297B-C776-47CB-ADC4-C1A22584BB60.png";
-import usSlide06 from "../image/image5/EBFE675E-2207-4E33-B2DD-60372FB1087C.png";
-import italySlide01 from "../image/image6/2EC3B782-A021-413E-B395-60F243BEBB7A.png";
-import italySlide02 from "../image/image6/8C30C31E-CB04-43BA-BA1A-397ED59FB4DD.png";
-import italySlide03 from "../image/image6/9797A6F7-6FEC-47CA-A5B3-58361B7C40F4.png";
-import italySlide04 from "../image/image6/C6E3B545-6B67-4437-86E8-A0509D5EA7A6.png";
-import italySlide05 from "../image/image6/D3F1F86D-182B-42A5-89CB-2C8D0307B623.png";
-import italySlide06 from "../image/image6/E23A4CD4-95BA-4559-B09E-6E1563A5513F.png";
-import franceSlide01 from "../image/image7/3671A4C8-8273-4053-B952-749A1A4875F8.png";
-import franceSlide02 from "../image/image7/55E139AD-9ABA-4C03-A2D3-5E3B18583B29.png";
-import franceSlide03 from "../image/image7/60D64285-1B0E-40EC-AECA-3DC19159F26E.png";
-import franceSlide04 from "../image/image7/66602436-9511-4480-9343-38CAC40135E0.png";
-import franceSlide05 from "../image/image7/B71DFC7F-7727-436F-9BE2-D69E99071217.png";
-import franceSlide06 from "../image/image7/D2C87E7A-481A-48FB-ABD5-AF127D803183.png";
-import russiaSlide01 from "../image/image8/0A561F6E-7135-484E-9055-B8D103DC0D62.png";
-import russiaSlide02 from "../image/image8/1E5BC3ED-4906-413A-A8CE-C69E6A805CAA.png";
-import russiaSlide03 from "../image/image8/2BBEA143-2DAA-4275-A4FE-0DB1B2AB4F3E.png";
-import russiaSlide04 from "../image/image8/30AEF693-0687-49ED-8420-BA41A7FFB70E.png";
-import russiaSlide05 from "../image/image8/310EC587-9C91-4CCE-B59A-6833A083FE74.png";
-import russiaSlide06 from "../image/image8/ABC67A6C-2488-461C-B7A9-2F4A977967F6.png";
-import indiaSlide01 from "../image/image9/20440646-6F5E-4198-A8EB-1A0B2480B6B5.png";
-import indiaSlide02 from "../image/image9/65169436-482D-4C52-A255-CC52AB228AEC.png";
-import indiaSlide03 from "../image/image9/8814E41A-18E1-4209-98EA-19EE8EFFAA96.png";
-import indiaSlide04 from "../image/image9/963FBDDB-E1BC-473E-ADEC-214FF8EB9255.png";
-import indiaSlide05 from "../image/image9/9ADC038D-DC8D-4254-8E83-C71AC2EAC3AB.png";
-import indiaSlide06 from "../image/image9/A398CA63-2D4A-49DF-B009-C685A91E0B47.png";
-import japanProfileImage from "../image/image19/イタリア・ドイツ関係図-12.png";
-import usProfileImage from "../image/image/image10/イタリア・ドイツ関係図-4.png";
-import franceProfileImage from "../image/image11/イタリア・ドイツ関係図-5.png";
-import indiaProfileImage from "../image/image13/イタリア・ドイツ関係図-6.png";
-import canadaProfileImage from "../image/image14/イタリア・ドイツ関係図-7.png";
-import ukProfileImage from "../image/image15/イタリア・ドイツ関係図-8.png";
-import italyProfileImage from "../image/image16/イタリア・ドイツ関係図-9.png";
-import russiaProfileImage from "../image/image17/イタリア・ドイツ関係図-10.png";
-import chinaProfileImage from "../image/image18/イタリア・ドイツ関係図-11.png";
+import usRelationshipMap from "../image/image12/us_relationship_map_2026.png";
+import japanRelationshipMap from "../image/image13/japan_relationship_map_flags_in_boxes-2.png";
+import canadaRelationshipMap from "../image/image14/canada_relationship_map_2026.png";
+import franceRelationshipMap from "../image/image15/france_relationship_map_2026.png";
+import ukRelationshipMap from "../image/image17/uk_relationship_map_2026.png";
 
 const NAV_LINKS = [
   { href: "#about", label: "About" },
@@ -154,43 +95,43 @@ const COUNTRY_ROTATION = [
 ] as const;
 
 const JAPAN_SLIDES = [
-  japanProfileImage,
+  japanRelationshipMap,
 ] as const;
 
 const CHINA_SLIDES = [
-  chinaProfileImage,
+  chinaInfographic,
 ] as const;
 
 const UK_SLIDES = [
-  ukProfileImage,
+  ukRelationshipMap,
 ] as const;
 
 const GERMANY_SLIDES = [
-  germanyProfileImage,
+  germanyInfographic,
 ] as const;
 
 const CANADA_SLIDES = [
-  canadaProfileImage,
+  canadaRelationshipMap,
 ] as const;
 
 const US_SLIDES = [
-  usProfileImage,
+  usRelationshipMap,
 ] as const;
 
 const ITALY_SLIDES = [
-  italyProfileImage,
+  italyInfographic,
 ] as const;
 
 const FRANCE_SLIDES = [
-  franceProfileImage,
+  franceRelationshipMap,
 ] as const;
 
 const RUSSIA_SLIDES = [
-  russiaProfileImage,
+  russiaInfographic,
 ] as const;
 
 const INDIA_SLIDES = [
-  indiaProfileImage,
+  indiaInfographic,
 ] as const;
 
 const COUNTRY_BRIEF_DESCRIPTIONS: Record<string, string[]> = {

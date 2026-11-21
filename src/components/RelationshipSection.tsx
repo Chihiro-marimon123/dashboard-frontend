@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 const W = 900
 const H = 500
@@ -390,21 +390,6 @@ export default function RelationshipSection() {
   const [hovered, setHovered] = useState<Relationship | null>(null)
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null)
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
-  const [isFullscreen, setIsFullscreen] = useState(false)
-
-  useEffect(() => {
-    if (!isFullscreen) return
-    const previousOverflow = document.body.style.overflow
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsFullscreen(false)
-    }
-    document.body.style.overflow = "hidden"
-    window.addEventListener("keydown", closeOnEscape)
-    return () => {
-      document.body.style.overflow = previousOverflow
-      window.removeEventListener("keydown", closeOnEscape)
-    }
-  }, [isFullscreen])
 
   const activeRels = relationships.filter(
     (r) =>
@@ -478,66 +463,33 @@ export default function RelationshipSection() {
         >
           Geopolitical relationships between the G7 nations, Russia, China, and
           India, covering alliances, strategic partnerships, trade dependencies,
-          and active rivalries. Hover over a country or edge to explore.
+          and active rivalries. Hover a country or edge to explore.
         </p>
 
         <div
           style={{
             marginBottom: 22,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            color: "#dfa92a",
-            fontSize: 14,
-            fontWeight: 500,
+            color: "#e85d5d",
+            fontSize: 22,
+            fontWeight: 600,
             lineHeight: 1.5,
+            letterSpacing: 0.2,
             fontFamily: "Inter, sans-serif",
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M9 9l5 12 1.8-5.2L21 14z" />
-            <path d="M7.2 2.2L8 5.1M5.1 8l-2.9-.8M14 4.1L12 6M6 12l-1.9 2" />
-          </svg>
           Click on a country to see its specific relationships.
         </div>
 
         {/* Network diagram */}
-        <div className={`relationship-diagram-layout${isFullscreen ? " relationship-diagram-fullscreen" : ""}`}>
-          {isFullscreen && (
-            <button
-              type="button"
-              className="relationship-diagram-close"
-              onClick={() => setIsFullscreen(false)}
-            >
-              Close diagram
-            </button>
-          )}
         <div
-          className="relationship-figure"
-          onClick={!isFullscreen ? () => setIsFullscreen(true) : undefined}
           style={{
             background: "#0a0e16",
             border: "1px solid #1a2435",
             borderRadius: 12,
             overflow: "hidden",
             position: "relative",
-            cursor: isFullscreen ? "default" : "zoom-in",
           }}
         >
-          {!isFullscreen && (
-            <button
-              type="button"
-              className="relationship-diagram-expand"
-              aria-label="Open diagram in fullscreen"
-              title="Open diagram in fullscreen"
-              onClick={(event) => {
-                event.stopPropagation()
-                setIsFullscreen(true)
-              }}
-            >
-              ⛶
-            </button>
-          )}
           <svg
             viewBox={`0 0 ${W} ${H}`}
             style={{ width: "100%", height: "auto", display: "block" }}
@@ -636,12 +588,11 @@ export default function RelationshipSection() {
                   style={{ cursor: "pointer" }}
                   onMouseEnter={() => setHoveredCountry(c.id)}
                   onMouseLeave={() => setHoveredCountry(null)}
-                  onClick={(event) => {
-                    event.stopPropagation()
+                  onClick={() =>
                     setSelectedCountry((current) =>
                       current === c.id ? null : c.id,
                     )
-                  }}
+                  }
                 >
                   <circle
                     cx={c.x}
@@ -761,7 +712,6 @@ export default function RelationshipSection() {
           )}
         </div>
 
-          <div className="relationship-legend">
         {/* Legend */}
         <div
           style={{ display: "flex", flexWrap: "wrap", gap: 16, marginTop: 20 }}
@@ -814,8 +764,6 @@ export default function RelationshipSection() {
               <span style={{ fontSize: 12, color: "#7a8899" }}>{b.label}</span>
             </div>
           ))}
-        </div>
-          </div>
         </div>
 
         {/* Relationship table */}
@@ -930,7 +878,7 @@ export default function RelationshipSection() {
             </div>
           </div>
 
-          <div style={{ maxHeight: 480, overflowX: "auto", overflowY: "auto", overscrollBehavior: "contain", paddingRight: 6 }}>
+          <div style={{ overflowX: "auto" }}>
             <table
               style={{
                 width: "100%",

@@ -30,7 +30,6 @@ export interface ConflictTradeData {
 export interface ConflictTradeRoute {
   rank: number;
   commodity: string;
-  hsCode: string;
   origin: string;
   destination: string;
   originCoords: [number, number];
@@ -305,14 +304,8 @@ export const conflictTradeData: ConflictTradeData[] = [
 
 // Verified bilateral changes from UN Comtrade annual HS records.
 export const conflictTradeRoutes: ConflictTradeRoute[] = [
-  { rank: 1, commodity: "Wheat and meslin", hsCode: "1001", origin: "Ukraine", destination: "Türkiye", originCoords: [30.5, 50.5], destinationCoords: [32.9, 39.9], beforeYear: 2021, beforeValueUsd: 384667531.98, afterYear: 2023, afterValueUsd: 447235000 },
-  { rank: 9, commodity: "Precious metals and stones", hsCode: "71", origin: "Lebanon", destination: "United Arab Emirates", originCoords: [35.9, 33.9], destinationCoords: [54.37, 24.45], beforeYear: 2018, beforeValueUsd: 267352085, afterYear: 2020, afterValueUsd: 476678613 },
-  { rank: 9, commodity: "Mineral fuels", hsCode: "27", origin: "Germany", destination: "Lebanon", originCoords: [10.45, 51.16], destinationCoords: [35.9, 33.9], beforeYear: 2018, beforeValueUsd: 12149813, afterYear: 2020, afterValueUsd: 3716131 },
-  { rank: 9, commodity: "Electrical machinery", hsCode: "85", origin: "China", destination: "Lebanon", originCoords: [104.2, 35.9], destinationCoords: [35.9, 33.9], beforeYear: 2018, beforeValueUsd: 404688487, afterYear: 2020, afterValueUsd: 156027013 },
-  { rank: 10, commodity: "Natural gas", hsCode: "2711", origin: "Myanmar", destination: "Thailand", originCoords: [96.1, 19.7], destinationCoords: [100.99, 15.87], beforeYear: 2020, beforeValueUsd: 1817970000, afterYear: 2022, afterValueUsd: 2466270000 },
-  { rank: 10, commodity: "Edible vegetables and roots", hsCode: "07", origin: "Myanmar", destination: "China", originCoords: [96.1, 19.7], destinationCoords: [104.2, 35.9], beforeYear: 2020, beforeValueUsd: 412310411.955, afterYear: 2022, afterValueUsd: 484890399.696 },
-  { rank: 10, commodity: "Electrical machinery", hsCode: "85", origin: "China", destination: "Myanmar", originCoords: [104.2, 35.9], destinationCoords: [96.1, 19.7], beforeYear: 2020, beforeValueUsd: 1061310614.898, afterYear: 2022, afterValueUsd: 412185183.837 },
-  { rank: 10, commodity: "Mineral fuels", hsCode: "27", origin: "Singapore", destination: "Myanmar", originCoords: [103.82, 1.35], destinationCoords: [96.1, 19.7], beforeYear: 2020, beforeValueUsd: 1819037367.71, afterYear: 2022, afterValueUsd: 4013171760.35 },
+  { rank: 1, commodity: "Wheat and meslin", origin: "Ukraine", destination: "Türkiye", originCoords: [30.5, 50.5], destinationCoords: [32.9, 39.9], beforeYear: 2021, beforeValueUsd: 384667531.98, afterYear: 2023, afterValueUsd: 447235000 },
+  { rank: 10, commodity: "Natural gas", origin: "Myanmar", destination: "Thailand", originCoords: [96.1, 19.7], destinationCoords: [100.99, 15.87], beforeYear: 2020, beforeValueUsd: 1817970000, afterYear: 2022, afterValueUsd: 2466270000 },
 ];
 
 export const unstableCountriesIndex: UnstableCountry[] = [
